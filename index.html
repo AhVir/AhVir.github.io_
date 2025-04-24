@@ -26,22 +26,34 @@
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-        
-        // Set canvas to full window size
+
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        
+
+        // Background particles
+        const bgParticles = [];
+        const numBgParticles = 100;
+
+        for (let i = 0; i < numBgParticles; i++) {
+            bgParticles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 0.7,
+                vy: (Math.random() - 0.5) * 0.7,
+                size: Math.random() * 1.2 + 0.3,
+                opacity: Math.random() * 0.5 + 0.3
+            });
+        }
+
         // Text settings
         const text = "Tanvir Ahmed";
         const fontSize = Math.min(canvas.width, canvas.height) * 0.15;
         ctx.font = `bold ${fontSize}px Arial`;
-        
-        // Get text dimensions
         const textWidth = ctx.measureText(text).width;
         const textX = (canvas.width - textWidth) / 2;
-        const textY = canvas.height / 2 + fontSize/3;
-        
-        // Create particles
+        const textY = canvas.height / 2 + fontSize / 3;
+
+        // Particle setup
         const particles = [];
         const particleDensity = 3;
         let isHovered = false;
@@ -49,14 +61,12 @@
         let mouseForce = 0;
         let mouseVelocityX = 0, mouseVelocityY = 0;
         let lastMouseX = 0, lastMouseY = 0;
-        
-        // Get text pixel data
+
         ctx.fillStyle = '#fff';
         ctx.fillText(text, textX, textY);
         const textData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Create particles from text pixels
+
         for (let y = 0; y < canvas.height; y += particleDensity) {
             for (let x = 0; x < canvas.width; x += particleDensity) {
                 const alpha = textData[(y * canvas.width + x) * 4 + 3];
@@ -77,160 +87,156 @@
                         freq: Math.random() * 0.2 + 0.05,
                         life: Math.random(),
                         lifeSpeed: Math.random() * 0.01 + 0.005,
-                        noiseOffset: Math.random() * 100 // For organic variation
+                        noiseOffset: Math.random() * 100
                     });
                 }
             }
         }
-        
-        // Mouse interaction
+
         canvas.addEventListener('mousemove', (e) => {
             const rect = canvas.getBoundingClientRect();
             const currentX = e.clientX - rect.left;
             const currentY = e.clientY - rect.top;
-            
-            // Calculate mouse velocity
             mouseVelocityX = currentX - lastMouseX;
             mouseVelocityY = currentY - lastMouseY;
             lastMouseX = currentX;
             lastMouseY = currentY;
-            
             hoverX = currentX;
             hoverY = currentY;
-            
-            // Check if mouse is near the text
+
             const textAreaPadding = 100;
             const textLeft = textX - textAreaPadding;
             const textRight = textX + textWidth + textAreaPadding;
             const textTop = textY - fontSize - textAreaPadding;
             const textBottom = textY + textAreaPadding;
-            
             const wasHovered = isHovered;
             isHovered = (
-                hoverX > textLeft && 
-                hoverX < textRight && 
-                hoverY > textTop && 
+                hoverX > textLeft &&
+                hoverX < textRight &&
+                hoverY > textTop &&
                 hoverY < textBottom
             );
-            
-            // Smooth hover transitions
             if (isHovered && !wasHovered) {
                 mouseForce = 0;
                 const rampUp = () => {
                     mouseForce = Math.min(1, mouseForce + 0.05);
-                    if (mouseForce < 1 && isHovered) {
-                        requestAnimationFrame(rampUp);
-                    }
+                    if (mouseForce < 1 && isHovered) requestAnimationFrame(rampUp);
                 };
                 rampUp();
             } else if (!isHovered && wasHovered) {
                 const rampDown = () => {
                     mouseForce = Math.max(0, mouseForce - 0.02);
-                    if (mouseForce > 0 && !isHovered) {
-                        requestAnimationFrame(rampDown);
-                    } else {
-                        mouseForce = 0;
-                    }
+                    if (mouseForce > 0 && !isHovered) requestAnimationFrame(rampDown);
+                    else mouseForce = 0;
                 };
                 rampDown();
             }
         });
-        
+
         canvas.addEventListener('mouseout', () => {
             isHovered = false;
             mouseForce = 0;
             mouseVelocityX = 0;
             mouseVelocityY = 0;
         });
-        
-        // Animation loop
+
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            const time = Date.now() * 0.001; // Current time in seconds
-            
+
+            // --- Draw and animate background particles ---
+            for (let i = 0; i < bgParticles.length; i++) {
+                const p = bgParticles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+
+                // Wrap around screen edges
+                if (p.x < 0) p.x = canvas.width;
+                if (p.x > canvas.width) p.x = 0;
+                if (p.y < 0) p.y = canvas.height;
+                if (p.y > canvas.height) p.y = 0;
+
+                ctx.beginPath();
+                ctx.fillStyle = `rgba(255, 255, 255, ${p.opacity})`;
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Draw lines between close background particles
+            for (let i = 0; i < bgParticles.length; i++) {
+                for (let j = i + 1; j < bgParticles.length; j++) {
+                    const p1 = bgParticles[i];
+                    const p2 = bgParticles[j];
+                    const dx = p1.x - p2.x;
+                    const dy = p1.y - p2.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 100) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${0.2 - dist / 500})`;
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            // --- Animate text particles ---
+            const time = Date.now() * 0.001;
             particles.forEach(p => {
-                // Update particle life for color animation
                 p.life += p.lifeSpeed;
                 if (p.life > 1) p.life = 0;
-                
-                // Calculate distance to mouse
+
                 const dx = hoverX - p.x;
                 const dy = hoverY - p.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
-                
+
                 if (isHovered && mouseForce > 0) {
-                    // Organic influence calculation
                     const influence = 200 / (distance + 40) * mouseForce;
-                    
                     if (influence > 0.1) {
-                        // Base angle (away from cursor)
                         let angle = Math.atan2(dy, dx) + Math.PI;
-                        
-                        // Add organic variation based on mouse movement and noise
-                        const mouseSpeed = Math.sqrt(mouseVelocityX*mouseVelocityX + mouseVelocityY*mouseVelocityY);
+                        const mouseSpeed = Math.sqrt(mouseVelocityX * mouseVelocityX + mouseVelocityY * mouseVelocityY);
                         const mouseAngle = Math.atan2(mouseVelocityY, mouseVelocityX);
                         const noiseValue = Math.sin(time * 0.5 + p.noiseOffset) * 0.5;
-                        
-                        // Combine mouse movement direction with noise
                         angle += noiseValue * 0.5 + (mouseSpeed * 0.01 * Math.sin(mouseAngle));
-                        
-                        // Vary force based on mouse speed
                         const force = influence * (12 + mouseSpeed * 0.2);
-                        
-                        // Apply force with organic variation
                         p.vx += Math.cos(angle) * force;
                         p.vy += Math.sin(angle) * force;
-                        
-                        // Add turbulence based on mouse speed
                         const turbulence = 0.3 + Math.min(1, mouseSpeed * 0.05);
                         p.vx += (Math.random() - 0.5) * influence * 3 * turbulence;
                         p.vy += (Math.random() - 0.5) * influence * 3 * turbulence;
                     }
                 }
-                
-                // Return to original position with organic variation
+
                 const spring = 0.08;
                 const friction = 0.9;
-                
-                // Add some organic wobble to the return force
                 const wobbleX = Math.sin(time * 0.7 + p.noiseOffset) * 0.2;
                 const wobbleY = Math.cos(time * 0.6 + p.noiseOffset * 1.3) * 0.2;
-                
                 p.vx += (p.originX - p.x + wobbleX) * spring;
                 p.vy += (p.originY - p.y + wobbleY) * spring;
-                
                 p.vx *= friction;
                 p.vy *= friction;
-                
-                // Continuous subtle movement
+
                 p.angle += p.freq;
                 const idleStrength = 0.6 - (mouseForce * 0.3);
                 p.vx += Math.cos(p.angle) * p.speed * idleStrength;
                 p.vy += Math.sin(p.angle) * p.speed * idleStrength;
-                
-                // Update position
                 p.x += p.vx;
                 p.y += p.vy;
-                
-                // Dynamic coloring
-                const speed = Math.min(1, Math.sqrt(p.vx*p.vx + p.vy*p.vy) * 2);
+
+                const speed = Math.min(1, Math.sqrt(p.vx * p.vx + p.vy * p.vy) * 2);
                 const pulse = Math.sin(p.life * Math.PI * 2) * 10;
                 const hueShift = speed * 20;
                 const brightness = 60 + speed * 20 + pulse;
-                
                 ctx.fillStyle = `hsl(${parseInt(p.color.split('(')[1].split(',')[0]) + hueShift}, 85%, ${brightness}%)`;
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.size * (1 + speed * 0.5), 0, Math.PI * 2);
                 ctx.fill();
             });
-            
+
             requestAnimationFrame(animate);
         }
-        
+
         animate();
-        
-        // Handle window resize
+
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
