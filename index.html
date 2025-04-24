@@ -1,131 +1,208 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tanvir Ahmed</title>
     <style>
-      html, body {
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-        background: #0e0e0e;
-      }
-      canvas {
-        display: block;
-      }
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            cursor: default;
+        }
+        canvas {
+            display: block;
+        }
     </style>
-  </head>
-  <body>
-    <!-- p5.js CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
     <script>
-      let font;
-      let particles = [];
-      let flowField = [];
-      let cols, rows;
-      let inc = 0.1;
-      let scl = 20;
-      let zoff = 0;
-
-      function preload() {
-        font = loadFont("https://cdnjs.cloudflare.com/ajax/libs/topcoat/0.8.0/font/SourceCodePro-Regular.otf");
-      }
-
-      function setup() {
-        createCanvas(windowWidth, windowHeight);
-        background(14);
-        textFont(font);
-        textSize(200);
-        textAlign(CENTER, CENTER);
-
-        // Generate center-aligned points for name
-        let bounds = font.textBounds("Tanvir Ahmed", 0, 0, 200);
-        let x = (width - bounds.w) / 2;
-        let y = (height + bounds.h) / 2;
-
-        let points = font.textToPoints("Tanvir Ahmed", x, y, 200, {
-          sampleFactor: 0.18, // Increase for more particles
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas to full window size
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        // Text settings
+        const text = "Tanvir Ahmed";
+        const fontSize = Math.min(canvas.width, canvas.height) * 0.15;
+        ctx.font = `bold ${fontSize}px Arial`;
+        
+        // Get text dimensions
+        const textWidth = ctx.measureText(text).width;
+        const textX = (canvas.width - textWidth) / 2;
+        const textY = canvas.height / 2 + fontSize/3;
+        
+        // Create particles
+        const particles = [];
+        const particleDensity = 3; // Lower = more particles
+        let isHovered = false;
+        let hoverX = 0, hoverY = 0;
+        let mouseForce = 0;
+        
+        // Get text pixel data to create particles only where text exists
+        ctx.fillStyle = '#fff';
+        ctx.fillText(text, textX, textY);
+        const textData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Create particles from text pixels
+        for (let y = 0; y < canvas.height; y += particleDensity) {
+            for (let x = 0; x < canvas.width; x += particleDensity) {
+                const alpha = textData[(y * canvas.width + x) * 4 + 3];
+                if (alpha > 128) {
+                    const hueBase = Math.random() * 60 + 180; // Blue/cyan base
+                    const hueVariation = Math.random() * 40 - 20; // Some variation
+                    particles.push({
+                        x: x,
+                        y: y,
+                        originX: x,
+                        originY: y,
+                        vx: 0,
+                        vy: 0,
+                        size: Math.random() * 1.5 + 1,
+                        color: `hsl(${hueBase + hueVariation}, 80%, ${Math.random() * 20 + 60}%)`,
+                        angle: Math.random() * Math.PI * 2,
+                        speed: Math.random() * 0.2 + 0.1,
+                        freq: Math.random() * 0.2 + 0.05,
+                        life: Math.random(), // For color animation
+                        lifeSpeed: Math.random() * 0.01 + 0.005
+                    });
+                }
+            }
+        }
+        
+        // Mouse interaction
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            hoverX = e.clientX - rect.left;
+            hoverY = e.clientY - rect.top;
+            
+            // Smooth transition for mouse force
+            const textAreaPadding = 100;
+            const textLeft = textX - textAreaPadding;
+            const textRight = textX + textWidth + textAreaPadding;
+            const textTop = textY - fontSize - textAreaPadding;
+            const textBottom = textY + textAreaPadding;
+            
+            const wasHovered = isHovered;
+            isHovered = (
+                hoverX > textLeft && 
+                hoverX < textRight && 
+                hoverY > textTop && 
+                hoverY < textBottom
+            );
+            
+            // Smoothly ramp up/down mouse force
+            if (isHovered && !wasHovered) {
+                mouseForce = 0;
+                const rampUp = () => {
+                    mouseForce += 0.05;
+                    if (mouseForce < 1 && isHovered) {
+                        requestAnimationFrame(rampUp);
+                    }
+                };
+                rampUp();
+            } else if (!isHovered && wasHovered) {
+                const rampDown = () => {
+                    mouseForce -= 0.05;
+                    if (mouseForce > 0 && !isHovered) {
+                        requestAnimationFrame(rampDown);
+                    } else {
+                        mouseForce = 0;
+                    }
+                };
+                rampDown();
+            }
         });
-
-        for (let pt of points) {
-          particles.push(new Particle(pt.x, pt.y));
+        
+        canvas.addEventListener('mouseout', () => {
+            isHovered = false;
+            mouseForce = 0;
+        });
+        
+        // Animation loop
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            particles.forEach(p => {
+                // Update particle life for color animation
+                p.life += p.lifeSpeed;
+                if (p.life > 1) p.life = 0;
+                
+                // Calculate distance to mouse
+                const dx = hoverX - p.x;
+                const dy = hoverY - p.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (isHovered && mouseForce > 0) {
+                    // More natural scattering effect
+                    const influenceRadius = 200;
+                    const influence = Math.max(0, 1 - distance / influenceRadius) * mouseForce;
+                    
+                    if (influence > 0) {
+                        const angle = Math.atan2(dy, dx);
+                        const force = influence * 5;
+                        
+                        // Apply force away from mouse
+                        p.vx += Math.cos(angle + Math.PI) * force;
+                        p.vy += Math.sin(angle + Math.PI) * force;
+                        
+                        // Add some randomness to scattering
+                        p.vx += (Math.random() - 0.5) * influence * 2;
+                        p.vy += (Math.random() - 0.5) * influence * 2;
+                    }
+                }
+                
+                // Return to original position with spring physics
+                const spring = 0.1;
+                const friction = 0.85; // Higher = smoother
+                
+                p.vx += (p.originX - p.x) * spring;
+                p.vy += (p.originY - p.y) * spring;
+                
+                p.vx *= friction;
+                p.vy *= friction;
+                
+                // Add subtle organic movement when at rest
+                if (!isHovered && Math.abs(p.x - p.originX) < 5 && Math.abs(p.y - p.originY) < 5) {
+                    p.angle += p.freq;
+                    p.vx += Math.cos(p.angle) * p.speed * 0.5;
+                    p.vy += Math.sin(p.angle) * p.speed * 0.5;
+                }
+                
+                // Update position
+                p.x += p.vx;
+                p.y += p.vy;
+                
+                // Dynamic color based on life and movement
+                const colorHue = parseInt(p.color.split('(')[1].split(',')[0]);
+                const brightness = 60 + Math.min(20, Math.sqrt(p.vx*p.vx + p.vy*p.vy) * 20);
+                const pulse = Math.sin(p.life * Math.PI * 2) * 10;
+                
+                ctx.fillStyle = `hsl(${colorHue}, 85%, ${brightness + pulse}%)`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            requestAnimationFrame(animate);
         }
-
-        cols = floor(width / scl);
-        rows = floor(height / scl);
-        flowField = new Array(cols * rows);
-      }
-
-      function draw() {
-        background(14, 14, 14, 5); // Lower alpha = longer trails
-        let yoff = 0;
-
-        for (let y = 0; y < rows; y++) {
-          let xoff = 0;
-          for (let x = 0; x < cols; x++) {
-            let index = x + y * cols;
-            let angle = noise(xoff, yoff, zoff) * TWO_PI * 4;
-            let v = p5.Vector.fromAngle(angle);
-            v.setMag(1);
-            flowField[index] = v;
-            xoff += inc;
-          }
-          yoff += inc;
-        }
-        zoff += 0.002;
-
-        for (let p of particles) {
-          p.follow(flowField);
-          p.update();
-          p.show();
-        }
-      }
-
-      class Particle {
-        constructor(x, y) {
-          this.pos = createVector(random(width), random(height));
-          this.target = createVector(x, y);
-          this.vel = p5.Vector.random2D();
-          this.acc = createVector();
-          this.maxSpeed = 4;
-        }
-
-        follow(flow) {
-          let x = floor(this.pos.x / scl);
-          let y = floor(this.pos.y / scl);
-          let index = x + y * cols;
-          if (flow[index]) {
-            let force = flow[index];
-            this.applyForce(force);
-          }
-        }
-
-        applyForce(force) {
-          this.acc.add(force);
-        }
-
-        update() {
-          let desired = p5.Vector.sub(this.target, this.pos);
-          desired.setMag(0.5);
-          this.applyForce(desired);
-
-          this.vel.add(this.acc);
-          this.vel.limit(this.maxSpeed);
-          this.pos.add(this.vel);
-          this.acc.mult(0);
-        }
-
-        show() {
-          stroke(255);
-          strokeWeight(3); // Slightly bigger = more visible
-          point(this.pos.x, this.pos.y);
-        }
-      }
-
-      function windowResized() {
-        resizeCanvas(windowWidth, windowHeight);
-      }
+        
+        animate();
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
     </script>
-  </body>
+</body>
 </html>
