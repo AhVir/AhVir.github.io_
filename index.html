@@ -105,7 +105,7 @@
             if (isHovered && !wasHovered) {
                 mouseForce = 0;
                 const rampUp = () => {
-                    mouseForce = Math.min(1, mouseForce + 0.1);
+                    mouseForce = Math.min(1, mouseForce + 0.05);
                     if (mouseForce < 1 && isHovered) {
                         requestAnimationFrame(rampUp);
                     }
@@ -113,7 +113,7 @@
                 rampUp();
             } else if (!isHovered && wasHovered) {
                 const rampDown = () => {
-                    mouseForce = Math.max(0, mouseForce - 0.05);
+                    mouseForce = Math.max(0, mouseForce - 0.02);
                     if (mouseForce > 0 && !isHovered) {
                         requestAnimationFrame(rampDown);
                     } else {
@@ -144,26 +144,26 @@
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 
                 if (isHovered && mouseForce > 0) {
-                    // Natural physics-based scattering (no artificial radius)
-                    const influence = 150 / (distance + 50) * mouseForce;
+                    // Strong but controlled scattering
+                    const influence = 200 / (distance + 40) * mouseForce;
                     
                     if (influence > 0.1) {
                         const angle = Math.atan2(dy, dx);
-                        const force = influence * 12; // Strong force
+                        const force = influence * 12; // Strong but stable force
                         
                         // Apply physical repulsion
                         p.vx += Math.cos(angle + Math.PI) * force;
                         p.vy += Math.sin(angle + Math.PI) * force;
                         
                         // Add organic randomness
-                        p.vx += (Math.random() - 0.5) * influence * 4;
-                        p.vy += (Math.random() - 0.5) * influence * 4;
+                        p.vx += (Math.random() - 0.5) * influence * 3;
+                        p.vy += (Math.random() - 0.5) * influence * 3;
                     }
                 }
                 
-                // Spring physics to return to origin
-                const spring = 0.1;
-                const friction = 0.88; // Higher friction = smoother
+                // Return to original position with spring physics
+                const spring = 0.08; // Softer spring
+                const friction = 0.9; // Higher friction
                 
                 p.vx += (p.originX - p.x) * spring;
                 p.vy += (p.originY - p.y) * spring;
@@ -173,7 +173,7 @@
                 
                 // Continuous subtle movement
                 p.angle += p.freq;
-                const idleStrength = 0.6 - (mouseForce * 0.4);
+                const idleStrength = 0.6 - (mouseForce * 0.3);
                 p.vx += Math.cos(p.angle) * p.speed * idleStrength;
                 p.vy += Math.sin(p.angle) * p.speed * idleStrength;
                 
