@@ -59,7 +59,7 @@
             for (let x = 0; x < canvas.width; x += particleDensity) {
                 const alpha = textData[(y * canvas.width + x) * 4 + 3];
                 if (alpha > 128) {
-                    const hueBase = Math.random() * 60 + 180;
+                    const hueBase = Math.random() * 60 + 180; // Blue-cyan base
                     const hueVariation = Math.random() * 40 - 20;
                     particles.push({
                         x: x,
@@ -69,12 +69,15 @@
                         vx: 0,
                         vy: 0,
                         size: Math.random() * 1.5 + 1,
-                        color: `hsl(${hueBase + hueVariation}, 80%, ${Math.random() * 20 + 60}%)`,
+                        baseHue: hueBase + hueVariation,
+                        baseBrightness: Math.random() * 20 + 60,
                         angle: Math.random() * Math.PI * 2,
                         speed: Math.random() * 0.2 + 0.1,
                         freq: Math.random() * 0.2 + 0.05,
                         life: Math.random(),
-                        lifeSpeed: Math.random() * 0.01 + 0.005
+                        lifeSpeed: Math.random() * 0.01 + 0.005,
+                        flickerSpeed: Math.random() * 0.05 + 0.01, // Unique flicker rhythm
+                        flickerIntensity: Math.random() * 0.3 + 0.7 // How much they flicker
                     });
                 }
             }
@@ -133,6 +136,12 @@
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
+            const time = Date.now() * 0.001; // Current time in seconds
+            
+            // Draw glow background first
+            ctx.fillStyle = 'rgba(100, 200, 255, 0.03)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
             particles.forEach(p => {
                 // Update particle life for color animation
                 p.life += p.lifeSpeed;
@@ -181,13 +190,34 @@
                 p.x += p.vx;
                 p.y += p.vy;
                 
-                // Dynamic coloring
+                // NEON FLICKER EFFECT
                 const speed = Math.min(1, Math.sqrt(p.vx*p.vx + p.vy*p.vy) * 2);
                 const pulse = Math.sin(p.life * Math.PI * 2) * 10;
-                const hueShift = speed * 20;
-                const brightness = 60 + speed * 20 + pulse;
                 
-                ctx.fillStyle = `hsl(${parseInt(p.color.split('(')[1].split(',')[0]) + hueShift}, 85%, ${brightness}%)`;
+                // Base color values
+                const hueShift = speed * 20;
+                const baseBrightness = p.baseBrightness + speed * 20 + pulse;
+                
+                // Flicker effect - random brightness variations
+                const flicker = Math.sin(time * 10 * p.flickerSpeed) * 
+                               Math.random() * 20 * p.flickerIntensity;
+                
+                // Combine all brightness effects
+                const brightness = Math.max(30, Math.min(100, 
+                    baseBrightness + flicker));
+                
+                // Create neon glow effect
+                const glowSize = p.size * (1 + speed * 0.5) * 2;
+                const glowOpacity = 0.3 * (brightness/100);
+                
+                // Draw glow first
+                ctx.fillStyle = `hsla(${p.baseHue + hueShift}, 100%, ${brightness}%, ${glowOpacity})`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, glowSize, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Then draw the bright core
+                ctx.fillStyle = `hsl(${p.baseHue + hueShift}, 100%, ${brightness}%)`;
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.size * (1 + speed * 0.5), 0, Math.PI * 2);
                 ctx.fill();
