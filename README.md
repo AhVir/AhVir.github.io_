@@ -2,4 +2,4 @@ This repo will be updated with a summary of mine, more likely, a personal websit
 [Coming Soon]
 
 Updates:
-[25.04.25] -> initial setup.
+- [25.04.25] -> initial setup.
