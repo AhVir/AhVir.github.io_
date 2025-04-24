@@ -1,102 +1,131 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<title>three.js webgl - PCD</title>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<link type="text/css" rel="stylesheet" href="main.css">
-	</head>
-	<body>
-		<div id="info">
-			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a>
-			<a href="https://pointclouds.org/documentation/tutorials/pcd_file_format.html" target="_blank" rel="noopener">PCD File format</a>
-		</div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tanvir Ahmed</title>
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: #0e0e0e;
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- p5.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+    <script>
+      let font;
+      let particles = [];
+      let flowField = [];
+      let cols, rows;
+      let inc = 0.1;
+      let scl = 20;
+      let zoff = 0;
 
-		<script type="importmap">
-			{
-				"imports": {
-					"three": "../build/three.module.js",
-					"three/addons/": "./jsm/"
-				}
-			}
-		</script>
+      function preload() {
+        font = loadFont("https://cdnjs.cloudflare.com/ajax/libs/topcoat/0.8.0/font/SourceCodePro-Regular.otf");
+      }
 
-		<script type="module">
+      function setup() {
+        createCanvas(windowWidth, windowHeight);
+        background(14);
+        textFont(font);
+        textSize(200);
+        textAlign(CENTER, CENTER);
 
-			import * as THREE from 'three';
+        // Generate center-aligned points for name
+        let bounds = font.textBounds("Tanvir Ahmed", 0, 0, 200);
+        let x = (width - bounds.w) / 2;
+        let y = (height + bounds.h) / 2;
 
-			import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-			import { PCDLoader } from 'three/addons/loaders/PCDLoader.js';
-			import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+        let points = font.textToPoints("Tanvir Ahmed", x, y, 200, {
+          sampleFactor: 0.18, // Increase for more particles
+        });
 
-			let camera, scene, renderer;
+        for (let pt of points) {
+          particles.push(new Particle(pt.x, pt.y));
+        }
 
-			init();
-			render();
+        cols = floor(width / scl);
+        rows = floor(height / scl);
+        flowField = new Array(cols * rows);
+      }
 
-			function init() {
+      function draw() {
+        background(14, 14, 14, 5); // Lower alpha = longer trails
+        let yoff = 0;
 
-				renderer = new THREE.WebGLRenderer( { antialias: true } );
-				renderer.setPixelRatio( window.devicePixelRatio );
-				renderer.setSize( window.innerWidth, window.innerHeight );
-				document.body.appendChild( renderer.domElement );
+        for (let y = 0; y < rows; y++) {
+          let xoff = 0;
+          for (let x = 0; x < cols; x++) {
+            let index = x + y * cols;
+            let angle = noise(xoff, yoff, zoff) * TWO_PI * 4;
+            let v = p5.Vector.fromAngle(angle);
+            v.setMag(1);
+            flowField[index] = v;
+            xoff += inc;
+          }
+          yoff += inc;
+        }
+        zoff += 0.002;
 
-				scene = new THREE.Scene();
+        for (let p of particles) {
+          p.follow(flowField);
+          p.update();
+          p.show();
+        }
+      }
 
-				camera = new THREE.PerspectiveCamera( 30, window.innerWidth / window.innerHeight, 0.01, 40 );
-				camera.position.set( 0, 0, 1 );
-				scene.add( camera );
+      class Particle {
+        constructor(x, y) {
+          this.pos = createVector(random(width), random(height));
+          this.target = createVector(x, y);
+          this.vel = p5.Vector.random2D();
+          this.acc = createVector();
+          this.maxSpeed = 4;
+        }
 
-				const controls = new OrbitControls( camera, renderer.domElement );
-				controls.addEventListener( 'change', render ); // use if there is no animation loop
-				controls.minDistance = 0.5;
-				controls.maxDistance = 10;
+        follow(flow) {
+          let x = floor(this.pos.x / scl);
+          let y = floor(this.pos.y / scl);
+          let index = x + y * cols;
+          if (flow[index]) {
+            let force = flow[index];
+            this.applyForce(force);
+          }
+        }
 
-				//scene.add( new THREE.AxesHelper( 1 ) );
+        applyForce(force) {
+          this.acc.add(force);
+        }
 
-				const loader = new PCDLoader();
-				loader.load( './models/pcd/binary/Zaghetto.pcd', function ( points ) {
+        update() {
+          let desired = p5.Vector.sub(this.target, this.pos);
+          desired.setMag(0.5);
+          this.applyForce(desired);
 
-					points.geometry.center();
-					points.geometry.rotateX( Math.PI );
-					points.name = 'Zaghetto.pcd';
-					scene.add( points );
+          this.vel.add(this.acc);
+          this.vel.limit(this.maxSpeed);
+          this.pos.add(this.vel);
+          this.acc.mult(0);
+        }
 
-					//
+        show() {
+          stroke(255);
+          strokeWeight(3); // Slightly bigger = more visible
+          point(this.pos.x, this.pos.y);
+        }
+      }
 
-					const gui = new GUI();
-
-					gui.add( points.material, 'size', 0.001, 0.01 ).onChange( render );
-					gui.addColor( points.material, 'color' ).onChange( render );
-					gui.open();
-
-					//
-
-					render();
-
-				} );
-
-				window.addEventListener( 'resize', onWindowResize );
-
-			}
-
-			function onWindowResize() {
-
-				camera.aspect = window.innerWidth / window.innerHeight;
-				camera.updateProjectionMatrix();
-
-				renderer.setSize( window.innerWidth, window.innerHeight );
-
-				render();
-
-			}
-
-			function render() {
-
-				renderer.render( scene, camera );
-
-			}
-
-		</script>
-	</body>
+      function windowResized() {
+        resizeCanvas(windowWidth, windowHeight);
+      }
+    </script>
+  </body>
 </html>
