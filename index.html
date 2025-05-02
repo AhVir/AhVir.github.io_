@@ -23,6 +23,8 @@
 
     <script data-goatcounter="https://ahvir.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
+
+    
     
 </head>
 <body>
@@ -246,5 +248,15 @@
             canvas.height = window.innerHeight;
         });
     </script>
+
+    <div id="view-counter">Loading views...</div>
+    <script>
+      fetch('https://weathered-wood-1a35.abcdeeddcba.workers.dev/count')
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('view-counter').textContent = `Views: ${data.views}`;
+        });
+    </script>
+    
 </body>
 </html>
