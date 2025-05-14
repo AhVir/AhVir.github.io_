@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tanvir Ahmed</title>
+    <!-- <style>
+       
+    </style> -->
+
+    <link rel="stylesheet" href="./style.css">
+
+    <script data-goatcounter="https://ahvir.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+
+    
+    <script src="./script.js" async></script>
+    
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <!-- <script>
+        
+    </script> -->
+
+    <div id="view-counter">Loading views...</div>
+    <script>
+      fetch('https://weathered-wood-1a35.abcdeeddcba.workers.dev/count')
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('view-counter').textContent = `Views: ${data.views}`;
+        });
+    </script>
+    
+</body>
+</html>
