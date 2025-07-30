@@ -5,10 +5,9 @@ const Hero = () => {
   const [currentText, setCurrentText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
   const texts = [
-    'Problem Solver',
-    'Researcher',
+    'No One!',
+    'AI Researcher',
     'Teaching Assistant',
-    'AI/ML Enthusiast',
   ];
 
   useEffect(() => {
