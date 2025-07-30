@@ -18,27 +18,29 @@ const Education = () => {
         'System Analysis And Design',
         'Database Management System',
         'Web Programming',
-        'Software Engineering'
+        'Software Engineering',
+        'Operating Systems',
+        'Digital Image Processing'
       ]
     },
-    {
-      institution: 'Dhaka College',
-      degree: 'Higher Secondary Certificate',
-      period: '2018 - 2020',
-      grade: 'Grade: 5.00 (A+)',
-      location: 'Dhaka, Bangladesh',
-      icon: BookOpen,
-      color: 'indigo',
-    },
-    {
-      institution: 'Faridpur Zilla School',
-      degree: 'Secondary School Certificate',
-      period: '2018',
-      grade: 'Grade: 5.00 (A+)',
-      location: 'Faridpur, Bangladesh',
-      icon: Award,
-      color: 'purple',
-    },
+    // {
+    //   institution: 'Dhaka College',
+    //   degree: 'Higher Secondary Certificate',
+    //   period: '2018 - 2020',
+    //   grade: 'Grade: 5.00 (A+)',
+    //   location: 'Dhaka, Bangladesh',
+    //   icon: BookOpen,
+    //   color: 'indigo',
+    // },
+    // {
+    //   institution: 'Faridpur Zilla School',
+    //   degree: 'Secondary School Certificate',
+    //   period: '2018',
+    //   grade: 'Grade: 5.00 (A+)',
+    //   location: 'Faridpur, Bangladesh',
+    //   icon: Award,
+    //   color: 'purple',
+    // },
   ];
 
   const colorClasses = {
@@ -79,7 +81,7 @@ const Education = () => {
           {education.map((edu, index) => {
             const colors = colorClasses[edu.color as keyof typeof colorClasses];
             const Icon = edu.icon;
-            
+
             return (
               <div
                 key={index}
