@@ -20,8 +20,8 @@ const Projects = () => {
       technologies: ['React', 'Node.js', 'Gemini API', 'Stanford NLP', 'MongoDB'],
       achievement: '🏆 1st Place (Poster Category) - UIU Fall Project Show 2024 (150+ teams)',
       links: {
-        github: '#',
-        live: '#'
+        github: 'https://github.com/AhVir/OptiTask_/',
+        live: null
       }
     },
     {
@@ -41,8 +41,8 @@ const Projects = () => {
       technologies: ['Unity', 'Python', 'Arduino', 'REST APIs', 'Machine Learning'],
       achievement: '🥉 3rd Runner-up - UIU Project Show Summer 2024 (100+ teams)',
       links: {
-        github: '#',
-        live: '#'
+        github: 'https://github.com/AhVir/Autonomous-Car-Parking/',
+        live: null
       }
     },
     {
@@ -62,7 +62,7 @@ const Projects = () => {
       technologies: ['React', 'Next.js', 'TypeScript', 'Solidity', 'MetaMask', 'Web3.js'],
       achievement: 'Currently in development',
       links: {
-        github: '#',
+        github: 'https://github.com/AhVir/VoteChain/',
         live: null
       }
     },
@@ -109,7 +109,7 @@ const Projects = () => {
           {projects.map((project, index) => {
             const colors = colorClasses[project.color as keyof typeof colorClasses];
             const Icon = project.icon;
-            
+
             return (
               <div
                 key={index}
