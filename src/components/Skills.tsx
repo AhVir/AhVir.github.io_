@@ -13,13 +13,13 @@ const Skills = () => {
       title: 'Web & Full Stack',
       icon: Globe,
       color: 'indigo',
-      skills: ['React', 'Next.js', 'Tailwind CSS', 'Node.js', 'HTML', 'CSS', 'Figma', 'Git']
+      skills: ['React', 'Next.js', 'Tailwind CSS', 'Node.js', 'HTML', 'CSS', 'Figma']
     },
     {
       title: 'Database & Backend',
       icon: Database,
       color: 'purple',
-      skills: ['SQL', 'MongoDB', 'PostgreSQL', 'Firebase', 'REST APIs', 'GraphQL']
+      skills: ['SQL', 'MongoDB', 'PostgreSQL', 'Firebase', 'REST APIs']
     },
     {
       title: 'Blockchain & Web3',
@@ -31,7 +31,7 @@ const Skills = () => {
       title: 'AI/ML & Data Science',
       icon: Brain,
       color: 'green',
-      skills: ['Scikit-learn', 'TensorFlow', 'Gemini API', 'Stanford NLP', 'OpenAI APIs', 'Deep Learning']
+      skills: ['Scikit-learn', 'TensorFlow', 'PyTorch']
     },
     {
       title: 'Core Concepts',
@@ -74,7 +74,7 @@ const Skills = () => {
       bg: 'bg-green-100 dark:bg-green-900/30',
       text: 'text-green-600 dark:text-green-400',
       border: 'border-green-200 dark:border-green-800',
-      gradient: 'from-green-600 to-green-700',  
+      gradient: 'from-green-600 to-green-700',
       hover: 'hover:bg-green-200 dark:hover:bg-green-800/50',
     },
     orange: {
@@ -103,7 +103,7 @@ const Skills = () => {
           {skillCategories.map((category, index) => {
             const colors = colorClasses[category.color as keyof typeof colorClasses];
             const Icon = category.icon;
-            
+
             return (
               <div
                 key={index}
@@ -137,7 +137,7 @@ const Skills = () => {
           <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 text-white shadow-xl">
             <h3 className="text-2xl font-bold mb-4">Competitive Programming</h3>
             <p className="text-blue-100 leading-relaxed mb-4">
-              Solved 500+ problems across platforms like Codeforces, LeetCode, and AtCoder. 
+              Solved 500+ problems across platforms like Codeforces, LeetCode, and AtCoder.
               Passionate about algorithmic problem solving and optimization techniques.
             </p>
             <div className="flex items-center space-x-4">
