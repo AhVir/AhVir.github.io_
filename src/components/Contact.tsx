@@ -21,7 +21,7 @@ const Contact = () => {
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
                 Contact Information
               </h3>
-              
+
               <div className="space-y-6">
                 <div className="flex items-center space-x-4">
                   <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
@@ -29,7 +29,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white">Email</p>
-                    <a 
+                    <a
                       href="mailto:shkhtanvirahmed@gmail.com"
                       className="text-blue-600 dark:text-blue-400 hover:underline"
                     >
@@ -37,14 +37,14 @@ const Contact = () => {
                     </a>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center space-x-4">
                   <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
                     <Phone className="w-6 h-6 text-green-600 dark:text-green-400" />
                   </div>
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white">Phone</p>
-                    <a 
+                    <a
                       href="tel:+8801643631514"
                       className="text-green-600 dark:text-green-400 hover:underline"
                     >
@@ -52,7 +52,7 @@ const Contact = () => {
                     </a>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center space-x-4">
                   <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
                     <MapPin className="w-6 h-6 text-purple-600 dark:text-purple-400" />
@@ -68,10 +68,10 @@ const Contact = () => {
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 text-white shadow-xl">
               <h3 className="text-2xl font-bold mb-4">Let's Connect</h3>
               <p className="text-blue-100 leading-relaxed mb-6">
-                Whether you're interested in collaborating on innovative projects, discussing AI/ML research, 
+                Whether you're interested in collaborating on innovative projects, discussing AI/ML research,
                 or exploring opportunities in blockchain development, I'd love to hear from you!
               </p>
-              
+
               <div className="flex space-x-4">
                 <a
                   href="https://github.com/shkhtanvirahmed"
@@ -93,7 +93,7 @@ const Contact = () => {
                 </a>
                 <a
                   href="https://ahvir.me"
-                  target="_blank" 
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="p-3 bg-white/20 hover:bg-white/30 rounded-lg transition-colors duration-200"
                   title="Personal Website"
@@ -108,7 +108,7 @@ const Contact = () => {
             <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
               Send a Message
             </h3>
-            
+
             <form className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -134,7 +134,7 @@ const Contact = () => {
                   />
                 </div>
               </div>
-              
+
               <div>
                 <label htmlFor="subject" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Subject
@@ -146,7 +146,7 @@ const Contact = () => {
                   placeholder="What's this about?"
                 />
               </div>
-              
+
               <div>
                 <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Message
@@ -158,7 +158,7 @@ const Contact = () => {
                   placeholder="Tell me about your project or opportunity..."
                 ></textarea>
               </div>
-              
+
               <button
                 type="submit"
                 className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2"
@@ -173,11 +173,11 @@ const Contact = () => {
         <div className="mt-16 text-center">
           <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20 dark:border-slate-700/20">
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              © 2025 Sheikh Tanvir Ahmed. Built with React, TypeScript, and Tailwind CSS.
+              © 2025 Sheikh Tanvir Ahmed.
             </p>
-            <p className="text-sm text-gray-500 dark:text-gray-500">
+            {/* <p className="text-sm text-gray-500 dark:text-gray-500">
               Designed and developed with ❤️ for the tech community
-            </p>
+            </p> */}
           </div>
         </div>
       </div>
