@@ -74,7 +74,7 @@ const Contact = () => {
 
               <div className="flex space-x-4">
                 <a
-                  href="https://github.com/shkhtanvirahmed"
+                  href="https://github.com/ahvir"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-3 bg-white/20 hover:bg-white/30 rounded-lg transition-colors duration-200"
@@ -91,7 +91,7 @@ const Contact = () => {
                 >
                   <Linkedin className="w-6 h-6" />
                 </a>
-                <a
+                {/* <a
                   href="https://ahvir.me"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -99,7 +99,7 @@ const Contact = () => {
                   title="Personal Website"
                 >
                   <ExternalLink className="w-6 h-6" />
-                </a>
+                </a> */}
               </div>
             </div>
           </div>
