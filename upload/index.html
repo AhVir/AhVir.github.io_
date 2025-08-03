@@ -32,8 +32,11 @@
       </button>
       <div>
         <h2 class="text-lg font-semibold mb-2">Your Files:</h2>
-        <ul id="fileList" class="list-disc list-inside space-y-1"></ul>
+        <ul id="fileList" class="space-y-2"></ul>
       </div>
+      <button onclick="logout()" class="mt-4 text-gray-600 hover:text-gray-800 underline">
+        Logout
+      </button>
     </div>
 
     <script>
@@ -57,54 +60,137 @@
         alert('Signup successful. You can now log in.');
       }
 
+      async function logout() {
+        await supabase.auth.signOut();
+        document.getElementById('auth-section').classList.remove('hidden');
+        document.getElementById('upload-section').classList.add('hidden');
+      }
+
       async function onAuthSuccess() {
         document.getElementById('auth-section').classList.add('hidden');
         document.getElementById('upload-section').classList.remove('hidden');
-        listFiles();
+        await listFiles();
       }
 
       async function uploadFile() {
         const file = document.getElementById('fileInput').files[0];
         if (!file) return alert('Please select a file.');
 
+        // Check file size (limit to 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          return alert('File size exceeds 5MB limit');
+        }
+
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return alert('You must be logged in.');
 
-        const filePath = `${user.id}/${file.name}`;
+        const filePath = `${user.id}/${Date.now()}_${file.name}`;
+        
+        // Show loading state
+        const uploadBtn = document.querySelector('#upload-section button');
+        uploadBtn.disabled = true;
+        uploadBtn.textContent = 'Uploading...';
 
-        const { error: uploadError } = await supabase.storage.from('upload').upload(filePath, file);
-        if (uploadError) return alert('Upload error: ' + uploadError.message);
+        try {
+          const { error: uploadError } = await supabase.storage
+            .from('upload')
+            .upload(filePath, file);
 
-        alert('File uploaded!');
-        listFiles();
+          if (uploadError) throw uploadError;
+
+          alert('File uploaded successfully!');
+          await listFiles();
+        } catch (error) {
+          alert('Upload error: ' + error.message);
+        } finally {
+          uploadBtn.disabled = false;
+          uploadBtn.textContent = 'Upload File';
+        }
       }
 
       async function listFiles() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const { data, error } = await supabase
-          .from('storage.objects')
-          .select('name')
-          .eq('owner', user.id);
-
-        if (error) return alert('Error loading files: ' + error.message);
-
         const fileList = document.getElementById('fileList');
-        fileList.innerHTML = '';
+        fileList.innerHTML = '<li class="text-gray-500">Loading files...</li>';
 
-        data.forEach(file => {
-          const { data: urlData } = supabase.storage.from('upload').getPublicUrl(file.name);
-          const li = document.createElement('li');
-          li.innerHTML = `<a href="${urlData.publicUrl}" target="_blank" class="text-blue-600 underline">${file.name.split('/').pop()}</a>`;
-          fileList.appendChild(li);
-        });
+        try {
+          // List files in the user's folder
+          const { data: files, error } = await supabase
+            .storage
+            .from('upload')
+            .list(`${user.id}/`);
+
+          if (error) throw error;
+
+          if (!files || files.length === 0) {
+            fileList.innerHTML = '<li class="text-gray-500">No files found</li>';
+            return;
+          }
+
+          fileList.innerHTML = '';
+
+          // Generate signed URLs for each file
+          for (const file of files) {
+            const filePath = `${user.id}/${file.name}`;
+            
+            // Create a signed URL that expires in 1 hour
+            const { data: { signedUrl }, error: urlError } = await supabase
+              .storage
+              .from('upload')
+              .createSignedUrl(filePath, 3600); // 3600 seconds = 1 hour
+
+            if (urlError) {
+              console.error('Error generating URL:', urlError);
+              continue;
+            }
+
+            const li = document.createElement('li');
+            li.className = 'flex items-center justify-between py-2 border-b border-gray-200';
+            li.innerHTML = `
+              <a href="${signedUrl}" target="_blank" class="text-blue-600 hover:underline truncate max-w-xs">
+                ${file.name.replace(/^\d+_/, '')} <!-- Remove timestamp prefix -->
+              </a>
+              <button onclick="deleteFile('${file.name}')" class="ml-4 text-red-600 hover:text-red-800">
+                Delete
+              </button>
+            `;
+            fileList.appendChild(li);
+          }
+        } catch (error) {
+          console.error('Error loading files:', error);
+          fileList.innerHTML = '<li class="text-red-500">Error loading files</li>';
+        }
       }
 
+      async function deleteFile(filename) {
+        if (!confirm('Are you sure you want to delete this file?')) return;
+        
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        try {
+          const { error } = await supabase
+            .storage
+            .from('upload')
+            .remove([`${user.id}/${filename}`]);
+
+          if (error) throw error;
+          
+          await listFiles();
+        } catch (error) {
+          console.error('Delete failed:', error);
+          alert('Delete failed: ' + error.message);
+        }
+      }
+
+      // Check for existing session on page load
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (session) onAuthSuccess();
       });
 
+      // Handle auth state changes
       supabase.auth.onAuthStateChange((event, session) => {
         if (session) onAuthSuccess();
       });
