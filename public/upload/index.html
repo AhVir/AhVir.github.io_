@@ -14,12 +14,9 @@
     <div id="auth-section" class="space-y-3 text-center">
       <input id="email" type="email" placeholder="Email" class="px-4 py-2 border rounded w-64" />
       <input id="password" type="password" placeholder="Password" class="px-4 py-2 border rounded w-64" />
-      <div class="space-x-2">
-        <button onclick="login()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+      <div>
+        <button onclick="login()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full">
           Login
-        </button>
-        <button onclick="signup()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-          Sign Up
         </button>
       </div>
     </div>
@@ -34,45 +31,159 @@
         <h2 class="text-lg font-semibold mb-2">Your Files:</h2>
         <ul id="fileList" class="space-y-2"></ul>
       </div>
-      <button onclick="logout()" class="mt-4 text-gray-600 hover:text-gray-800 underline">
+      <button onclick="logout()" class="mt-4 bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 w-full">
         Logout
       </button>
+      <div id="session-timeout" class="text-sm text-gray-500 text-center"></div>
     </div>
 
     <script>
       const supabaseUrl = 'https://hvdzrokpxdchfzkpezaz.supabase.co';
       const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2ZHpyb2tweGRjaGZ6a3BlemF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQyNDY0NzYsImV4cCI6MjA2OTgyMjQ3Nn0.o4MTIBjPzMieZ-wzmdQVVrJ7QRfuSrQA_hhZ7x75Plk';
       const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+      
+      // Session timeout in milliseconds (1 hour)
+      const SESSION_TIMEOUT = 2 * 60 * 1000; // 2 minutes
+      let sessionTimer;
+      let lastActivityTime;
 
+      // Initialize the page
+      initPage();
+
+      async function initPage() {
+        // Clear any existing session if it's expired
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          const sessionAge = Date.now() - new Date(session.created_at).getTime();
+          if (sessionAge > SESSION_TIMEOUT) {
+            await supabase.auth.signOut();
+            showAuthSection();
+          } else {
+            startSessionTimer(SESSION_TIMEOUT - sessionAge);
+            showUploadSection();
+          }
+        } else {
+          showAuthSection();
+        }
+      }
+
+      // async function login() {
+      //   const email = document.getElementById('email').value;
+      //   const password = document.getElementById('password').value;
+        
+      //   // This will automatically create the user if they don't exist
+      //   const { error } = await supabase.auth.signInWithPassword({ 
+      //     email, 
+      //     password,
+      //     options: {
+      //       shouldCreateUser: true // Auto-create user if not exists
+      //     }
+      //   });
+        
+      //   if (error) {
+      //     alert('Login failed: ' + error.message);
+      //     return;
+      //   }
+        
+      //   startSessionTimer(SESSION_TIMEOUT);
+      //   showUploadSection();
+      // }
+
+      // In login function
       async function login() {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) return alert('Login failed: ' + error.message);
-        onAuthSuccess();
+        
+        const { error } = await supabase.auth.signInWithPassword({ 
+          email, 
+          password,
+          options: {
+            shouldCreateUser: true,
+            auth: {
+              // Key changes for stricter session control:
+              persistSession: false, // Won't survive page reload
+              autoRefreshToken: false // Requires fresh login after expiration
+            }
+          }
+        });
+        
+        if (error) {
+          alert('Login failed: ' + error.message);
+          return;
+        }
+        
+        startSessionTimer(SESSION_TIMEOUT);
+        showUploadSection();
       }
 
-      async function signup() {
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const { error } = await supabase.auth.signUp({ email, password });
-        if (error) return alert('Signup failed: ' + error.message);
-        alert('Signup successful. You can now log in.');
+      // Modify the initialization
+      async function initPage() {
+        // Always start fresh
+        await supabase.auth.signOut();
+        showAuthSection();
       }
 
       async function logout() {
+        clearTimeout(sessionTimer);
         await supabase.auth.signOut();
-        document.getElementById('auth-section').classList.remove('hidden');
-        document.getElementById('upload-section').classList.add('hidden');
+        // Clear all auth-related storage
+        localStorage.removeItem(`sb-${supabaseUrl.replace(/^https?:\/\//, '')}-auth-token`);
+        sessionStorage.removeItem(`sb-${supabaseUrl.replace(/^https?:\/\//, '')}-auth-token`);
+        showAuthSection();
       }
 
-      async function onAuthSuccess() {
+      function startSessionTimer(timeoutDuration) {
+        clearTimeout(sessionTimer);
+        lastActivityTime = Date.now();
+        
+        // Update the timeout display every minute
+        const updateTimeoutDisplay = () => {
+          const remaining = Math.round((timeoutDuration - (Date.now() - lastActivityTime)) / 1000);
+          const minutes = Math.floor(remaining / 60);
+          const seconds = Math.floor(remaining % 60);
+          
+          const timeoutDisplay = document.getElementById('session-timeout');
+          if (timeoutDisplay) {
+            timeoutDisplay.textContent = `Session expires in ${minutes}m ${seconds}s`;
+          }
+        };
+        
+        updateTimeoutDisplay();
+        const intervalId = setInterval(updateTimeoutDisplay, 1000);
+        
+        sessionTimer = setTimeout(async () => {
+          clearInterval(intervalId);
+          await logout();
+          alert('Your session has expired. Please log in again.');
+        }, timeoutDuration);
+      }
+
+      function resetSessionTimer() {
+        if (lastActivityTime) {
+          const elapsed = Date.now() - lastActivityTime;
+          if (elapsed < SESSION_TIMEOUT) {
+            startSessionTimer(SESSION_TIMEOUT - elapsed);
+          }
+        }
+      }
+
+      function showAuthSection() {
+        document.getElementById('auth-section').classList.remove('hidden');
+        document.getElementById('upload-section').classList.add('hidden');
+        // Clear form inputs
+        document.getElementById('email').value = '';
+        document.getElementById('password').value = '';
+      }
+
+      function showUploadSection() {
         document.getElementById('auth-section').classList.add('hidden');
         document.getElementById('upload-section').classList.remove('hidden');
-        await listFiles();
+        listFiles();
       }
 
       async function uploadFile() {
+        resetSessionTimer(); // Reset timer on activity
+        
         const file = document.getElementById('fileInput').files[0];
         if (!file) return alert('Please select a file.');
 
@@ -109,6 +220,8 @@
       }
 
       async function listFiles() {
+        resetSessionTimer(); // Reset timer on activity
+        
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
@@ -165,6 +278,8 @@
       }
 
       async function deleteFile(filename) {
+        resetSessionTimer(); // Reset timer on activity
+        
         if (!confirm('Are you sure you want to delete this file?')) return;
         
         const { data: { user } } = await supabase.auth.getUser();
@@ -185,15 +300,10 @@
         }
       }
 
-      // Check for existing session on page load
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session) onAuthSuccess();
-      });
-
-      // Handle auth state changes
-      supabase.auth.onAuthStateChange((event, session) => {
-        if (session) onAuthSuccess();
-      });
+      // Track user activity to reset session timer
+      document.addEventListener('mousemove', resetSessionTimer);
+      document.addEventListener('keypress', resetSessionTimer);
+      document.addEventListener('click', resetSessionTimer);
     </script>
   </body>
 </html>
