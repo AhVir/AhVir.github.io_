@@ -43,7 +43,7 @@
       const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
       
       // Session timeout in milliseconds (1 hour)
-      const SESSION_TIMEOUT = 60 * 1000;
+      const SESSION_TIMEOUT = 2 * 60 * 1000; // 2 minutes
       let sessionTimer;
       let lastActivityTime;
 
@@ -67,16 +67,43 @@
         }
       }
 
+      // async function login() {
+      //   const email = document.getElementById('email').value;
+      //   const password = document.getElementById('password').value;
+        
+      //   // This will automatically create the user if they don't exist
+      //   const { error } = await supabase.auth.signInWithPassword({ 
+      //     email, 
+      //     password,
+      //     options: {
+      //       shouldCreateUser: true // Auto-create user if not exists
+      //     }
+      //   });
+        
+      //   if (error) {
+      //     alert('Login failed: ' + error.message);
+      //     return;
+      //   }
+        
+      //   startSessionTimer(SESSION_TIMEOUT);
+      //   showUploadSection();
+      // }
+
+      // In login function
       async function login() {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         
-        // This will automatically create the user if they don't exist
         const { error } = await supabase.auth.signInWithPassword({ 
           email, 
           password,
           options: {
-            shouldCreateUser: true // Auto-create user if not exists
+            shouldCreateUser: true,
+            auth: {
+              // Key changes for stricter session control:
+              persistSession: false, // Won't survive page reload
+              autoRefreshToken: false // Requires fresh login after expiration
+            }
           }
         });
         
@@ -87,6 +114,13 @@
         
         startSessionTimer(SESSION_TIMEOUT);
         showUploadSection();
+      }
+
+      // Modify the initialization
+      async function initPage() {
+        // Always start fresh
+        await supabase.auth.signOut();
+        showAuthSection();
       }
 
       async function logout() {
