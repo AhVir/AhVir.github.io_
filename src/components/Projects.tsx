@@ -46,9 +46,9 @@ const Projects = () => {
       }
     },
     {
-      title: 'Blockchain-Based Voting System',
+      title: 'VoteChain - Blockchain Based Voting System',
       period: 'Expected Completion: June 2025',
-      status: 'In Progress',
+      status: 'Completed',
       color: 'purple',
       icon: Award,
       description: 'A decentralized voting platform with wallet authentication, real-time voting logic, and secure smart contract execution.',
