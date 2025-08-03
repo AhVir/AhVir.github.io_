@@ -18,6 +18,9 @@
         <button onclick="login()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
           Login
         </button>
+        <button onclick="signup()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+          Sign Up
+        </button>
       </div>
     </div>
 
@@ -46,10 +49,18 @@
         onAuthSuccess();
       }
 
+      async function signup() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const { error } = await supabase.auth.signUp({ email, password });
+        if (error) return alert('Signup failed: ' + error.message);
+        alert('Signup successful. You can now log in.');
+      }
+
       async function onAuthSuccess() {
         document.getElementById('auth-section').classList.add('hidden');
         document.getElementById('upload-section').classList.remove('hidden');
-        await listFiles();
+        listFiles();
       }
 
       async function uploadFile() {
@@ -63,18 +74,6 @@
 
         const { error: uploadError } = await supabase.storage.from('upload').upload(filePath, file);
         if (uploadError) return alert('Upload error: ' + uploadError.message);
-
-        // Insert metadata in storage.objects table (schema qualified)
-        const { error: insertError } = await supabase
-          .from('storage.objects')
-          .insert({
-            bucket_id: 'upload',
-            name: filePath,
-            owner: user.id,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          });
-        if (insertError) return alert('Metadata insert error: ' + insertError.message);
 
         alert('File uploaded!');
         listFiles();
@@ -94,12 +93,12 @@
         const fileList = document.getElementById('fileList');
         fileList.innerHTML = '';
 
-        for (const file of data) {
-          const { data: { publicUrl } } = supabase.storage.from('upload').getPublicUrl(file.name);
+        data.forEach(file => {
+          const { data: urlData } = supabase.storage.from('upload').getPublicUrl(file.name);
           const li = document.createElement('li');
-          li.innerHTML = `<a href="${publicUrl}" target="_blank" class="text-blue-600 underline">${file.name.split('/').pop()}</a>`;
+          li.innerHTML = `<a href="${urlData.publicUrl}" target="_blank" class="text-blue-600 underline">${file.name.split('/').pop()}</a>`;
           fileList.appendChild(li);
-        }
+        });
       }
 
       supabase.auth.getSession().then(({ data: { session } }) => {
