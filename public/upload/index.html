@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Private File Upload</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  </head>
+  <body class="bg-gray-50 min-h-screen flex flex-col items-center justify-center p-6 text-gray-800">
+    <h1 class="text-2xl font-bold mb-4">Private File Upload</h1>
+
+    <!-- Auth section -->
+    <div id="auth-section" class="space-y-3 text-center">
+      <input id="email" type="email" placeholder="Email" class="px-4 py-2 border rounded w-64" />
+      <input id="password" type="password" placeholder="Password" class="px-4 py-2 border rounded w-64" />
+      <div class="space-x-2">
+        <button onclick="login()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+          Login
+        </button>
+        <button onclick="signup()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+          Sign Up
+        </button>
+      </div>
+    </div>
+
+    <!-- Upload section -->
+    <div id="upload-section" class="hidden mt-8 w-full max-w-md space-y-4">
+      <input type="file" id="fileInput" class="w-full" />
+      <button onclick="uploadFile()" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 w-full">
+        Upload File
+      </button>
+      <div>
+        <h2 class="text-lg font-semibold mb-2">Your Files:</h2>
+        <ul id="fileList" class="space-y-2"></ul>
+      </div>
+      <button onclick="logout()" class="mt-4 text-gray-600 hover:text-gray-800 underline">
+        Logout
+      </button>
+    </div>
+
+    <script>
+      const supabaseUrl = 'https://hvdzrokpxdchfzkpezaz.supabase.co';
+      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2ZHpyb2tweGRjaGZ6a3BlemF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQyNDY0NzYsImV4cCI6MjA2OTgyMjQ3Nn0.o4MTIBjPzMieZ-wzmdQVVrJ7QRfuSrQA_hhZ7x75Plk';
+      const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+      async function login() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) return alert('Login failed: ' + error.message);
+        onAuthSuccess();
+      }
+
+      async function signup() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const { error } = await supabase.auth.signUp({ email, password });
+        if (error) return alert('Signup failed: ' + error.message);
+        alert('Signup successful. You can now log in.');
+      }
+
+      async function logout() {
+        await supabase.auth.signOut();
+        document.getElementById('auth-section').classList.remove('hidden');
+        document.getElementById('upload-section').classList.add('hidden');
+      }
+
+      async function onAuthSuccess() {
+        document.getElementById('auth-section').classList.add('hidden');
+        document.getElementById('upload-section').classList.remove('hidden');
+        await listFiles();
+      }
+
+      async function uploadFile() {
+        const file = document.getElementById('fileInput').files[0];
+        if (!file) return alert('Please select a file.');
+
+        // Check file size (limit to 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          return alert('File size exceeds 5MB limit');
+        }
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return alert('You must be logged in.');
+
+        const filePath = `${user.id}/${Date.now()}_${file.name}`;
+        
+        // Show loading state
+        const uploadBtn = document.querySelector('#upload-section button');
+        uploadBtn.disabled = true;
+        uploadBtn.textContent = 'Uploading...';
+
+        try {
+          const { error: uploadError } = await supabase.storage
+            .from('upload')
+            .upload(filePath, file);
+
+          if (uploadError) throw uploadError;
+
+          alert('File uploaded successfully!');
+          await listFiles();
+        } catch (error) {
+          alert('Upload error: ' + error.message);
+        } finally {
+          uploadBtn.disabled = false;
+          uploadBtn.textContent = 'Upload File';
+        }
+      }
+
+      async function listFiles() {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const fileList = document.getElementById('fileList');
+        fileList.innerHTML = '<li class="text-gray-500">Loading files...</li>';
+
+        try {
+          // List files in the user's folder
+          const { data: files, error } = await supabase
+            .storage
+            .from('upload')
+            .list(`${user.id}/`);
+
+          if (error) throw error;
+
+          if (!files || files.length === 0) {
+            fileList.innerHTML = '<li class="text-gray-500">No files found</li>';
+            return;
+          }
+
+          fileList.innerHTML = '';
+
+          // Generate signed URLs for each file
+          for (const file of files) {
+            const filePath = `${user.id}/${file.name}`;
+            
+            // Create a signed URL that expires in 1 hour
+            const { data: { signedUrl }, error: urlError } = await supabase
+              .storage
+              .from('upload')
+              .createSignedUrl(filePath, 3600); // 3600 seconds = 1 hour
+
+            if (urlError) {
+              console.error('Error generating URL:', urlError);
+              continue;
+            }
+
+            const li = document.createElement('li');
+            li.className = 'flex items-center justify-between py-2 border-b border-gray-200';
+            li.innerHTML = `
+              <a href="${signedUrl}" target="_blank" class="text-blue-600 hover:underline truncate max-w-xs">
+                ${file.name.replace(/^\d+_/, '')} <!-- Remove timestamp prefix -->
+              </a>
+              <button onclick="deleteFile('${file.name}')" class="ml-4 text-red-600 hover:text-red-800">
+                Delete
+              </button>
+            `;
+            fileList.appendChild(li);
+          }
+        } catch (error) {
+          console.error('Error loading files:', error);
+          fileList.innerHTML = '<li class="text-red-500">Error loading files</li>';
+        }
+      }
+
+      async function deleteFile(filename) {
+        if (!confirm('Are you sure you want to delete this file?')) return;
+        
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        try {
+          const { error } = await supabase
+            .storage
+            .from('upload')
+            .remove([`${user.id}/${filename}`]);
+
+          if (error) throw error;
+          
+          await listFiles();
+        } catch (error) {
+          console.error('Delete failed:', error);
+          alert('Delete failed: ' + error.message);
+        }
+      }
+
+      // Check for existing session on page load
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) onAuthSuccess();
+      });
+
+      // Handle auth state changes
+      supabase.auth.onAuthStateChange((event, session) => {
+        if (session) onAuthSuccess();
+      });
+    </script>
+  </body>
+</html>
