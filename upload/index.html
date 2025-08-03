@@ -73,7 +73,7 @@
 
         const filePath = `${user.id}/${file.name}`;
 
-        const { error: uploadError } = await supabase.storage.from('uploads').upload(filePath, file);
+        const { error: uploadError } = await supabase.storage.from('upload').upload(filePath, file);
         if (uploadError) return alert('Upload error: ' + uploadError.message);
 
         alert('File uploaded!');
@@ -85,7 +85,7 @@
         if (!user) return;
 
         const { data, error } = await supabase
-          .from('objects')
+          .from('storage.objects')
           .select('name')
           .eq('owner', user.id);
 
@@ -95,7 +95,7 @@
         fileList.innerHTML = '';
 
         data.forEach(file => {
-          const { data: urlData } = supabase.storage.from('uploads').getPublicUrl(file.name);
+          const { data: urlData } = supabase.storage.from('upload').getPublicUrl(file.name);
           const li = document.createElement('li');
           li.innerHTML = `<a href="${urlData.publicUrl}" target="_blank" class="text-blue-600 underline">${file.name.split('/').pop()}</a>`;
           fileList.appendChild(li);
