@@ -16,7 +16,7 @@ const About = () => {
           <div className="space-y-6">
             <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20 dark:border-slate-700/20">
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                Passionate Developer & Problem Solver
+                AI Researcher & Problem Solver
               </h3>
               <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
                 An undergrad CS student with passion torwards NLP, Deep Learning & Quantum Computing.
@@ -27,8 +27,8 @@ const About = () => {
                 I'm passionate about creating innovative solutions that make a real-world impact.
               </p> */}
               <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                When I'm not coding, you'll find me solving algorithmic challenges on competitive programming platforms
-                or mentoring fellow students in data structures and machine learning concepts.
+                When I'm not coding, you'll either find me solving algorithmic challenges on competitive programming platforms
+                or maybe leading teams in the hackathons. I've also been actively involded in mentoring fellow students & juniors in the academia includeing programming concepts, data structures and others.
               </p>
             </div>
           </div>
