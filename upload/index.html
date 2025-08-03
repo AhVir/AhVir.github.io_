@@ -5,8 +5,9 @@
     <title>Secure File Upload</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-    <script defer src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
   </head>
   <body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-6">
     <div id="auth" class="text-center">
@@ -39,21 +40,22 @@
     </div>
 
     <script>
-      // TODO: Replace with your actual Firebase config
+      // ✅ Replace with your actual Firebase config
       const firebaseConfig = {
         apiKey: "AIzaSyAlSYL8XKME1XOskc4pkr_x2r5IrxC30KE",
         authDomain: "ahvir-me.firebaseapp.com",
         databaseURL: "https://ahvir-me-default-rtdb.firebaseio.com",
         projectId: "ahvir-me",
-        storageBucket: "ahvir-me.firebasestorage.app",
+        storageBucket: "ahvir-me.appspot.com", // ✅ FIXED this line
         messagingSenderId: "715760027236",
         appId: "1:715760027236:web:1ce79d77587c001ccb0171"
       };
 
+      // ✅ Firebase initialization
       firebase.initializeApp(firebaseConfig);
       const storage = firebase.storage();
 
-      const correctPassword = "22327"; // Change this to your real pass
+      const correctPassword = "1122"; // Set your password
 
       function checkPassword() {
         const input = document.getElementById("password").value;
