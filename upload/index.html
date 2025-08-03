@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <title>Private File Upload</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <h2>Upload your files</h2>
+  
+  <input type="file" id="fileInput" />
+  <button onclick="uploadFile()">Upload</button>
+  
+  <h3>Your Files:</h3>
+  <ul id="fileList"></ul>
+  
+  <script>
+    // Initialize Supabase
+    const supabaseUrl = 'https://hvdzrokpxdchfzkpezaz.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2ZHpyb2tweGRjaGZ6a3BlemF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQyNDY0NzYsImV4cCI6MjA2OTgyMjQ3Nn0.o4MTIBjPzMieZ-wzmdQVVrJ7QRfuSrQA_hhZ7x75Plk';
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+    async function uploadFile() {
+      const user = supabase.auth.getUser();
+      const { data: { user: currentUser } } = await user;
+
+      if (!currentUser) {
+        alert('Please login first');
+        return;
+      }
+
+      const fileInput = document.getElementById('fileInput');
+      const file = fileInput.files[0];
+      if (!file) {
+        alert('Select a file first');
+        return;
+      }
+
+      const filePath = `${currentUser.id}/${file.name}`;
+
+      // Upload file to bucket 'uploads'
+      const { data, error } = await supabase.storage
+        .from('uploads')
+        .upload(filePath, file);
+
+      if (error) {
+        alert('Upload error: ' + error.message);
+        return;
+      }
+
+      // Insert metadata with owner in storage.objects table
+      const { error: metaError } = await supabase
+        .from('objects')
+        .insert({
+          bucket_id: 'uploads',
+          name: filePath,
+          owner: currentUser.id,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+
+      if (metaError) {
+        alert('Error saving file metadata: ' + metaError.message);
+        return;
+      }
+
+      alert('File uploaded successfully!');
+      listFiles();
+    }
+
+    async function listFiles() {
+      const user = supabase.auth.getUser();
+      const { data: { user: currentUser } } = await user;
+      if (!currentUser) {
+        document.getElementById('fileList').innerHTML = 'Please login to see files.';
+        return;
+      }
+
+      // Fetch user files from storage.objects table filtered by owner
+      const { data, error } = await supabase
+        .from('objects')
+        .select('name')
+        .eq('owner', currentUser.id);
+
+      if (error) {
+        document.getElementById('fileList').innerText = 'Error loading files.';
+        return;
+      }
+
+      const listEl = document.getElementById('fileList');
+      listEl.innerHTML = '';
+
+      for (const fileObj of data) {
+        const publicUrl = supabase.storage.from('uploads').getPublicUrl(fileObj.name).data.publicUrl;
+        const li = document.createElement('li');
+        li.innerHTML = `<a href="${publicUrl}" target="_blank">${fileObj.name.split('/').pop()}</a>`;
+        listEl.appendChild(li);
+      }
+    }
+
+    // Run listFiles on page load (if user is logged in)
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (session) listFiles();
+      else document.getElementById('fileList').innerHTML = 'Please log in to see files.';
+    });
+  </script>
+</body>
+</html>
