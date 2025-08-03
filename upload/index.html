@@ -85,7 +85,7 @@
         if (!user) return;
 
         const { data, error } = await supabase
-          .from('storage.objects')
+          .from('objects')
           .select('name')
           .eq('owner', user.id);
 
