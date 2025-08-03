@@ -1,95 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Private File Upload</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body class="bg-gray-50 min-h-screen flex flex-col items-center justify-center p-6 text-gray-800">
-  <h1 class="text-2xl font-bold mb-4">Private File Upload</h1>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Private File Upload</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  </head>
+  <body class="bg-gray-50 min-h-screen flex flex-col items-center justify-center p-6 text-gray-800">
+    <h1 class="text-2xl font-bold mb-4">Private File Upload</h1>
 
-  <div id="auth-section" class="space-y-3 text-center">
-    <input id="email" type="email" placeholder="Email" class="px-4 py-2 border rounded w-64" />
-    <input id="password" type="password" placeholder="Password" class="px-4 py-2 border rounded w-64" />
-    <div class="space-x-2">
-      <button onclick="login()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-        Login
+    <!-- Auth section -->
+    <div id="auth-section" class="space-y-3 text-center">
+      <input id="email" type="email" placeholder="Email" class="px-4 py-2 border rounded w-64" />
+      <input id="password" type="password" placeholder="Password" class="px-4 py-2 border rounded w-64" />
+      <div class="space-x-2">
+        <button onclick="login()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+          Login
+        </button>
+      </div>
+    </div>
+
+    <!-- Upload section -->
+    <div id="upload-section" class="hidden mt-8 w-full max-w-md space-y-4">
+      <input type="file" id="fileInput" class="w-full" />
+      <button onclick="uploadFile()" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 w-full">
+        Upload File
       </button>
+      <div>
+        <h2 class="text-lg font-semibold mb-2">Your Files:</h2>
+        <ul id="fileList" class="list-disc list-inside space-y-1"></ul>
+      </div>
     </div>
-  </div>
 
-  <div id="upload-section" class="hidden mt-8 w-full max-w-md space-y-4">
-    <input type="file" id="fileInput" class="w-full" />
-    <button onclick="uploadFile()" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 w-full">
-      Upload File
-    </button>
-    <div>
-      <h2 class="text-lg font-semibold mb-2">Your Files:</h2>
-      <ul id="fileList" class="list-disc list-inside space-y-1"></ul>
-    </div>
-  </div>
+    <script>
+      const supabaseUrl = 'https://hvdzrokpxdchfzkpezaz.supabase.co';
+      const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
+      const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-  <script>
-    const supabaseUrl = 'https://hvdzrokpxdchfzkpezaz.supabase.co';
-    const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+      async function login() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) return alert('Login failed: ' + error.message);
+        onAuthSuccess();
+      }
 
-    async function login() {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) return alert('Login failed: ' + error.message);
-      onAuthSuccess();
-    }
+      async function onAuthSuccess() {
+        document.getElementById('auth-section').classList.add('hidden');
+        document.getElementById('upload-section').classList.remove('hidden');
+        await listFiles();
+      }
 
-    async function onAuthSuccess() {
-      document.getElementById('auth-section').classList.add('hidden');
-      document.getElementById('upload-section').classList.remove('hidden');
-      listFiles();
-    }
+      async function uploadFile() {
+        const file = document.getElementById('fileInput').files[0];
+        if (!file) return alert('Please select a file.');
 
-    async function uploadFile() {
-      const file = document.getElementById('fileInput').files[0];
-      if (!file) return alert('Please select a file.');
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return alert('You must be logged in.');
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return alert('You must be logged in.');
+        const filePath = `${user.id}/${file.name}`;
 
-      const filePath = `${user.id}/${file.name}`;
-      const { error: uploadError } = await supabase.storage.from('upload').upload(filePath, file);
-      if (uploadError) return alert('Upload error: ' + uploadError.message);
+        const { error: uploadError } = await supabase.storage.from('upload').upload(filePath, file);
+        if (uploadError) return alert('Upload error: ' + uploadError.message);
 
-      alert('File uploaded!');
-      listFiles();
-    }
+        // Insert metadata in storage.objects table (schema qualified)
+        const { error: insertError } = await supabase
+          .from('storage.objects')
+          .insert({
+            bucket_id: 'upload',
+            name: filePath,
+            owner: user.id,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          });
+        if (insertError) return alert('Metadata insert error: ' + insertError.message);
 
-    async function listFiles() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+        alert('File uploaded!');
+        listFiles();
+      }
 
-      const { data, error } = await supabase.storage.from('upload').list(`${user.id}/`);
-      if (error) return alert('Error loading files: ' + error.message);
+      async function listFiles() {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
 
-      const fileList = document.getElementById('fileList');
-      fileList.innerHTML = '';
+        const { data, error } = await supabase
+          .from('storage.objects')
+          .select('name')
+          .eq('owner', user.id);
 
-      data.forEach(file => {
-        const publicUrl = supabase.storage.from('upload').getPublicUrl(`${user.id}/${file.name}`).data.publicUrl;
-        const li = document.createElement('li');
-        li.innerHTML = `<a href="${publicUrl}" target="_blank" class="text-blue-600 underline">${file.name}</a>`;
-        fileList.appendChild(li);
+        if (error) return alert('Error loading files: ' + error.message);
+
+        const fileList = document.getElementById('fileList');
+        fileList.innerHTML = '';
+
+        for (const file of data) {
+          const { data: { publicUrl } } = supabase.storage.from('upload').getPublicUrl(file.name);
+          const li = document.createElement('li');
+          li.innerHTML = `<a href="${publicUrl}" target="_blank" class="text-blue-600 underline">${file.name.split('/').pop()}</a>`;
+          fileList.appendChild(li);
+        }
+      }
+
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) onAuthSuccess();
       });
-    }
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) onAuthSuccess();
-    });
-
-    supabase.auth.onAuthStateChange((event, session) => {
-      if (session) onAuthSuccess();
-    });
-  </script>
-</body>
+      supabase.auth.onAuthStateChange((event, session) => {
+        if (session) onAuthSuccess();
+      });
+    </script>
+  </body>
 </html>
