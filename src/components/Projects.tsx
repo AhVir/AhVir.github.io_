@@ -60,7 +60,7 @@ const Projects = () => {
         'Transparent election process'
       ],
       technologies: ['React', 'Next.js', 'TypeScript', 'Solidity', 'MetaMask', 'Web3.js'],
-      // achievement: 'Currently in development',
+      achievement: 'Shortlisted',
       links: {
         github: 'https://github.com/AhVir/VoteChain/',
         live: null
