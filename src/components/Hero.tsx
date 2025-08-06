@@ -62,6 +62,21 @@ const Hero = () => {
             >
               View My Work
             </a>
+            <a
+              href="../../public/cv/cv.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+            >
+              View CV
+            </a>
+            <a
+              href="../../cv.pdf"
+              download
+              className="px-8 py-3 border-2 border-green-600 dark:border-green-400 text-green-600 dark:text-green-400 font-medium rounded-full hover:bg-green-600 hover:text-white dark:hover:bg-green-400 dark:hover:text-slate-900 transition-all duration-300 transform hover:scale-105"
+            >
+              Download CV
+            </a>
           </div>
 
           <div className="flex items-center justify-center space-x-6">
