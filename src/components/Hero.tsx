@@ -2,8 +2,35 @@ import React, { useState, useEffect } from 'react';
 import { ChevronDown, Github, Linkedin, Mail, ExternalLink } from 'lucide-react';
 
 const Hero = () => {
+  // const [currentText, setCurrentText] = useState('');
+  // const [currentIndex, setCurrentIndex] = useState(0);
+  // const texts = [
+  //   'No One!',
+  //   'AI Researcher',
+  //   'Teaching Assistant',
+  // ];
+
+  // useEffect(() => {
+  //   const typeText = () => {
+  //     const fullText = texts[currentIndex];
+  //     if (currentText.length < fullText.length) {
+  //       setCurrentText(fullText.slice(0, currentText.length + 1));
+  //     } else {
+  //       setTimeout(() => {
+  //         setCurrentText('');
+  //         setCurrentIndex((prev) => (prev + 1) % texts.length);
+  //       }, 2000);
+  //     }
+  //   };
+
+  //   const timeout = setTimeout(typeText, 100);
+  //   return () => clearTimeout(timeout);
+  // }, [currentText, currentIndex]);
+
   const [currentText, setCurrentText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const texts = [
     'No One!',
     'AI Researcher',
@@ -11,21 +38,34 @@ const Hero = () => {
   ];
 
   useEffect(() => {
-    const typeText = () => {
-      const fullText = texts[currentIndex];
-      if (currentText.length < fullText.length) {
-        setCurrentText(fullText.slice(0, currentText.length + 1));
-      } else {
-        setTimeout(() => {
-          setCurrentText('');
-          setCurrentIndex((prev) => (prev + 1) % texts.length);
-        }, 2000);
-      }
-    };
+    const fullText = texts[currentIndex];
+    let timeout;
 
-    const timeout = setTimeout(typeText, 100);
+    if (!isDeleting && currentText.length < fullText.length) {
+      // Typing
+      timeout = setTimeout(() => {
+        setCurrentText(fullText.slice(0, currentText.length + 1));
+      }, 100);    // 100ms
+    } else if (isDeleting && currentText.length > 0) {
+      // Deleting
+      timeout = setTimeout(() => {
+        setCurrentText(fullText.slice(0, currentText.length - 1));
+      }, 50);     // 50ms
+    } else {
+      // Switch phase
+      timeout = setTimeout(() => {
+        if (!isDeleting) {
+          setIsDeleting(true); // Start deleting after pause
+        } else {
+          setIsDeleting(false); // Start typing next string
+          setCurrentIndex((prev) => (prev + 1) % texts.length);
+        }
+      }, 1000);   // 1000 ms
+    }
+
     return () => clearTimeout(timeout);
-  }, [currentText, currentIndex]);
+  }, [currentText, isDeleting, currentIndex]);
+
 
   return (
     <section className="min-h-screen flex items-center justify-center px-4 pt-16">
