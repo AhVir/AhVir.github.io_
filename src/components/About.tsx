@@ -19,7 +19,7 @@ const About = () => {
                 AI Researcher & Problem Solver
               </h3>
               <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
-                An undergrad CS student with passion torwards NLP, Deep Learning & Quantum Computing.
+                An undergrad CS student with passion torwards NLP, LLM & Computer Vision.
                 Additionally, sometimes a full-stack developer, or blockchain developer, or even an AI/ML engineer when it needed to be.
               </p>
               {/* <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
@@ -74,7 +74,7 @@ const About = () => {
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 text-white shadow-xl">
               <h3 className="text-2xl font-bold mb-4">Current Focus</h3>
               <p className="text-blue-100 leading-relaxed">
-                Currently focused on conducting research in quantum computing and its applications in machine learning, while also exploring large language models (LLMs) and deep learning.
+                Currently focused on conducting research in LLM and Computer Vision.
               </p>
             </div>
           </div>
