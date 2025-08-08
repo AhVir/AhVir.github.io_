@@ -21,7 +21,7 @@ const Experience = () => {
     {
       company: 'United International University',
       position: 'Undergraduate Teaching Assistant',
-      period: 'November 2024 - Present',
+      period: 'November 2024 - July 2025',
       location: 'Dhaka, Bangladesh',
       type: 'Part-time',
       icon: Users,
