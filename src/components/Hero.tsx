@@ -78,12 +78,12 @@ const Hero = () => {
             {/* </span> */}
           </h1>
 
-          <div className="h-16 mb-8">
+          {/* <div className="h-16 mb-8">
             <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300">
               <span className="font-medium">{currentText}</span>
               <span className="animate-pulse">|</span>
             </p>
-          </div>
+          </div> */}
 
           <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
             Computer Science student passionate about NLP, Computer Vision, and Quantum Computing.
