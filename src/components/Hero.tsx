@@ -27,44 +27,44 @@ const Hero = () => {
   //   return () => clearTimeout(timeout);
   // }, [currentText, currentIndex]);
 
-  const [currentText, setCurrentText] = useState('');
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isDeleting, setIsDeleting] = useState(false);
+  // const [currentText, setCurrentText] = useState('');
+  // const [currentIndex, setCurrentIndex] = useState(0);
+  // const [isDeleting, setIsDeleting] = useState(false);
 
-  const texts = [
-    'No One!',
-    'AI Researcher',
-    'Teaching Assistant',
-  ];
+  // const texts = [
+  //   'No One!',
+  //   'AI Researcher',
+  //   'Teaching Assistant',
+  // ];
 
-  useEffect(() => {
-    const fullText = texts[currentIndex];
-    let timeout;
+  // useEffect(() => {
+  //   const fullText = texts[currentIndex];
+  //   let timeout;
 
-    if (!isDeleting && currentText.length < fullText.length) {
-      // Typing
-      timeout = setTimeout(() => {
-        setCurrentText(fullText.slice(0, currentText.length + 1));
-      }, 100);    // 100ms
-    } else if (isDeleting && currentText.length > 0) {
-      // Deleting
-      timeout = setTimeout(() => {
-        setCurrentText(fullText.slice(0, currentText.length - 1));
-      }, 50);     // 50ms
-    } else {
-      // Switch phase
-      timeout = setTimeout(() => {
-        if (!isDeleting) {
-          setIsDeleting(true); // Start deleting after pause
-        } else {
-          setIsDeleting(false); // Start typing next string
-          setCurrentIndex((prev) => (prev + 1) % texts.length);
-        }
-      }, 1000);   // 1000 ms
-    }
+  //   if (!isDeleting && currentText.length < fullText.length) {
+  //     // Typing
+  //     timeout = setTimeout(() => {
+  //       setCurrentText(fullText.slice(0, currentText.length + 1));
+  //     }, 100);    // 100ms
+  //   } else if (isDeleting && currentText.length > 0) {
+  //     // Deleting
+  //     timeout = setTimeout(() => {
+  //       setCurrentText(fullText.slice(0, currentText.length - 1));
+  //     }, 50);     // 50ms
+  //   } else {
+  //     // Switch phase
+  //     timeout = setTimeout(() => {
+  //       if (!isDeleting) {
+  //         setIsDeleting(true); // Start deleting after pause
+  //       } else {
+  //         setIsDeleting(false); // Start typing next string
+  //         setCurrentIndex((prev) => (prev + 1) % texts.length);
+  //       }
+  //     }, 1000);   // 1000 ms
+  //   }
 
-    return () => clearTimeout(timeout);
-  }, [currentText, isDeleting, currentIndex]);
+  //   return () => clearTimeout(timeout);
+  // }, [currentText, isDeleting, currentIndex]);
 
 
   return (
