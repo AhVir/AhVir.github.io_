@@ -85,9 +85,9 @@ const Hero = () => {
             </p>
           </div> */}
 
-          <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
+          {/* <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
             Computer Science student passionate about NLP, Computer Vision, and Quantum Computing.
-          </p>
+          </p> */}
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
             <a
