@@ -16,7 +16,7 @@ const About = () => {
           <div className="space-y-6">
             <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20 dark:border-slate-700/20">
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                AI Researcher & Problem Solver
+                AI Researcher
               </h3>
               <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
                 An undergrad CS student with passion torwards NLP, LLM & Computer Vision.
