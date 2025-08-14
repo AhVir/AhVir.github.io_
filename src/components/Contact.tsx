@@ -70,7 +70,7 @@ const Contact = () => {
               <p className="text-blue-100 leading-relaxed mb-6">
                 {/* Whether you're interested in collaborating on innovative projects, discussing AI/ML research,
                 or exploring opportunities in blockchain development, I'd love to hear from you! */}
-                In case, if you want to communicate
+                In case, you want to communicate
               </p>
 
               <div className="flex space-x-4">
