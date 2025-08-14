@@ -10,9 +10,9 @@ const Contact = () => {
             Get In Touch
           </h2>
           <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-indigo-600 mx-auto mb-8"></div>
-          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          {/* <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
             Ready to collaborate on exciting projects or discuss opportunities in AI, blockchain, and full-stack development
-          </p>
+          </p> */}
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12 items-start">
@@ -68,8 +68,9 @@ const Contact = () => {
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 text-white shadow-xl">
               <h3 className="text-2xl font-bold mb-4">Let's Connect</h3>
               <p className="text-blue-100 leading-relaxed mb-6">
-                Whether you're interested in collaborating on innovative projects, discussing AI/ML research,
-                or exploring opportunities in blockchain development, I'd love to hear from you!
+                {/* Whether you're interested in collaborating on innovative projects, discussing AI/ML research,
+                or exploring opportunities in blockchain development, I'd love to hear from you! */}
+                In case, if you want to communicate
               </p>
 
               <div className="flex space-x-4">
