@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, Github, Linkedin, Mail, ExternalLink } from 'lucide-react';
+import { FaKaggle } from "react-icons/fa";
+
 
 const Hero = () => {
   // const [currentText, setCurrentText] = useState('');
@@ -143,11 +145,20 @@ const Hero = () => {
             >
               <Mail className="w-6 h-6 text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
             </a>
+
+            <a
+              href="https://www.kaggle.com/ahvir0"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-3 rounded-full bg-white/10 dark:bg-slate-800/50 backdrop-blur-sm hover:bg-white/20 dark:hover:bg-slate-700/50 transition-all duration-300 transform hover:scale-110 group"
+            >
+              <FaKaggle className="w-6 h-6 text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
+            </a>
           </div>
         </div>
 
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <ChevronDown className="w-8 h-8 text-gray-400 dark:text-gray-600" />
+          {/* <ChevronDown className="w-8 h-8 text-gray-400 dark:text-gray-600" /> */}
         </div>
       </div>
     </section>
