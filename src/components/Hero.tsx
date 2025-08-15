@@ -70,7 +70,7 @@ const Hero = () => {
 
 
   return (
-    <section className="min-h-screen flex items-center justify-center px-4 pt-16">
+    <section className="min-h-screen flex items-center justify-center px-4 pt-16 relative">
       <div className="max-w-4xl mx-auto text-center">
         <div className="animate-fade-in-up">
           <h1 className="text-5xl md:text-7xl font-bold text-gray-900 dark:text-white mb-6">
@@ -156,10 +156,10 @@ const Hero = () => {
             </a>
           </div>
         </div>
+      </div>
 
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-          {/* <ChevronDown className="w-8 h-8 text-gray-400 dark:text-gray-600" /> */}
-        </div>
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+        <ChevronDown className="w-8 h-8 text-gray-400 dark:text-gray-600" />
       </div>
     </section>
   );
