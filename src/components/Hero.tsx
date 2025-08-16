@@ -75,9 +75,6 @@ const Hero = () => {
         <div className="animate-fade-in-up">
           <h1 className="text-5xl md:text-7xl font-bold text-gray-900 dark:text-white mb-6">
             Sheikh Tanvir Ahmed
-            {/* <span className="block text-4xl md:text-6xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-400 dark:via-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
-              Ahmed */}
-            {/* </span> */}
           </h1>
 
           {/* <div className="h-16 mb-8">
@@ -131,14 +128,6 @@ const Hero = () => {
             >
               <Linkedin className="w-6 h-6 text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
             </a>
-            {/* <a
-              href="https://ahvir.me"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-3 rounded-full bg-white/10 dark:bg-slate-800/50 backdrop-blur-sm hover:bg-white/20 dark:hover:bg-slate-700/50 transition-all duration-300 transform hover:scale-110 group"
-            >
-              <ExternalLink className="w-6 h-6 text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
-            </a> */}
             <a
               href="mailto:shkhtanvirahmed@gmail.com"
               className="p-3 rounded-full bg-white/10 dark:bg-slate-800/50 backdrop-blur-sm hover:bg-white/20 dark:hover:bg-slate-700/50 transition-all duration-300 transform hover:scale-110 group"
