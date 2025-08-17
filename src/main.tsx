@@ -11,7 +11,7 @@
 
 // ---------------- For Reconstruct ----------
 import { createRoot } from 'react-dom/client';
-import { Github, Linkedin } from 'lucide-react';
+import { Github, Linkedin, Mail } from 'lucide-react';
 import "./index.css";
 
 const App = () => {
@@ -53,6 +53,12 @@ const App = () => {
           className="p-3 rounded-full bg-white/10 dark:bg-slate-800/50 backdrop-blur-sm hover:bg-white/20 dark:hover:bg-slate-700/50 transition-all duration-300 transform hover:scale-110 group"
         >
           <Linkedin className="w-6 h-6 text-gray-300 group-hover:text-blue-400" />
+        </a>
+        <a
+          href="mailto:shkhtanvirahmed@gmail.com"
+          className="p-3 rounded-full bg-white/10 dark:bg-slate-800/50 backdrop-blur-sm hover:bg-white/20 dark:hover:bg-slate-700/50 transition-all duration-300 transform hover:scale-110 group"
+        >
+          <Mail className="w-6 h-6 text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
         </a>
       </div>
     </div>
