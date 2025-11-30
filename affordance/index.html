@@ -236,9 +236,9 @@
                 <div class="video-card bg-white p-6 rounded-xl shadow-md border border-gray-100 transition duration-300 hover:shadow-xl">
                     <h2 class="text-xl font-semibold text-secondary truncate">Clip ${index + 1}: ${item.video_name}</h2>
                     
-                    <!-- Video Player - Updated with preload="auto", autoplay, and loop -->
-                    <video class="video-player" controls preload="auto" muted autoplay loop>
-                        <source src="${videoSrc}" type="video/mp4" onerror="this.parentNode.innerHTML='<div class=\\'p-4 bg-red-100 text-red-700 rounded-lg\\'>Error: Video file not found at ${videoSrc}. Check path: ${VIDEO_BASE_PATH}</div>'">
+                    <!-- Video Player -->
+                    <video class="video-player" controls preload="metadata" muted loop playsinline>
+                        <source src="${videoSrc}" type="video/mp4">
                         Your browser does not support the video tag.
                     </video>
 
