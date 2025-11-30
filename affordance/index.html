@@ -58,9 +58,9 @@
 </head>
 <body class="bg-gray-50 font-sans text-gray-800 p-4 sm:p-8">
 
-    <header class="max-w-6xl mx-auto mb-8 bg-white p-6 rounded-xl shadow-lg">
+    <header class="max-w-7xl mx-auto mb-8 bg-white p-6 rounded-xl shadow-lg">
         <h1 class="text-3xl font-bold text-primary mb-2">Affordance Level Annotation</h1>
-        <p class="text-gray-600 mb-4">Review each video clip, check the model's prediction, and classify the affordance level as 'Telec' or 'Gibsonia'. Your selections are saved automatically in your browser.</p>
+        <!-- <p class="text-gray-600 mb-4">Review each video clip, check the model's prediction, and classify the affordance level as 'Telec' or 'Gibsonia'. Your selections are saved automatically in your browser.</p> -->
 
         <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
             <div id="status-message" class="text-sm font-medium text-gray-500">
@@ -76,8 +76,9 @@
         </div>
     </header>
 
-    <main id="video-list" class="max-w-6xl mx-auto grid grid-cols-1 gap-6">
-        </main>
+    <main id="video-list" class="max-w-7xl mx-auto">
+        <!-- Container will be populated by JavaScript -->
+    </main>
 
     <script>
         // --- Configuration ---
@@ -227,10 +228,10 @@
             const errorId = `error-${index}`;
 
             return `
-                <div class="video-card bg-white p-6 rounded-xl shadow-md border border-gray-100 transition duration-300 hover:shadow-xl">
+                <div class="video-card bg-white p-6 rounded-xl shadow-md border border-gray-100 transition duration-300 hover:shadow-xl h-full">
                     <h2 class="text-xl font-semibold text-secondary truncate mb-4">Clip ${index + 1}: ${item.video_name}</h2>
                     
-                    <div class="flex flex-col md:flex-row gap-6">
+                    <div class="flex flex-col md:flex-row gap-6 h-full">
                         <!-- Video Section (Left) -->
                         <div class="md:w-1/2">
                             <div class="relative">
@@ -265,6 +266,49 @@
                     </div>
                 </div>
             `;
+        }
+
+        /**
+         * Renders all video cards in a two-column layout
+         */
+        function renderData() {
+            let html = '';
+            
+            // Create rows with two cards each
+            for (let i = 0; i < allVideoData.length; i += 2) {
+                // If we have at least two items left, create a two-column row
+                if (i + 1 < allVideoData.length) {
+                    html += `
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                            ${createVideoCard(allVideoData[i], i)}
+                            ${createVideoCard(allVideoData[i+1], i+1)}
+                        </div>
+                    `;
+                } else {
+                    // Last item (odd number of items)
+                    html += `
+                        <div class="grid grid-cols-1 gap-6 mb-6">
+                            ${createVideoCard(allVideoData[i], i)}
+                        </div>
+                    `;
+                }
+            }
+            
+            VIDEO_LIST_EL.innerHTML = html;
+
+            // Attach event listeners to all dynamically created dropdowns
+            document.querySelectorAll('select[data-index]').forEach(selectEl => {
+                selectEl.addEventListener('change', (e) => {
+                    const index = parseInt(e.target.dataset.index, 10);
+                    const value = e.target.value;
+                    handleSelectionChange(index, value);
+                });
+            });
+
+            // Set up manual loading for videos (user must click to load)
+            setupManualLoading();
+
+            updateStatus();
         }
 
         /**
@@ -364,27 +408,6 @@
                     loadVideoOnDemand(index);
                 });
             });
-        }
-
-        /**
-         * Renders all video cards and attaches event listeners.
-         */
-        function renderData() {
-            VIDEO_LIST_EL.innerHTML = allVideoData.map(createVideoCard).join('');
-
-            // Attach event listeners to all dynamically created dropdowns
-            document.querySelectorAll('select[data-index]').forEach(selectEl => {
-                selectEl.addEventListener('change', (e) => {
-                    const index = parseInt(e.target.dataset.index, 10);
-                    const value = e.target.value;
-                    handleSelectionChange(index, value);
-                });
-            });
-
-            // Set up manual loading for videos (user must click to load)
-            setupManualLoading();
-
-            updateStatus();
         }
 
         /**
