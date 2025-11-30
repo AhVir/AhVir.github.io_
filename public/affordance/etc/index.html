@@ -82,7 +82,7 @@
     <script>
         // --- Configuration ---
         const DATA_URL = './data.csv'; 
-        const VIDEO_BASE_PATH = './encoded_videos/'; 
+        const VIDEO_BASE_PATH = './videos/'; 
         const LOCAL_STORAGE_KEY = 'affordance_annotations';
         const VIDEO_LIST_EL = document.getElementById('video-list');
         const DOWNLOAD_BTN = document.getElementById('download-btn');
@@ -226,6 +226,7 @@
             const loadingId = `loading-${index}`;
             const errorId = `error-${index}`;
 
+            // Removed the nested <source> tag as it's not needed for dynamic loading on the <video> element.
             return `
                 <div class="video-card bg-white p-6 rounded-xl shadow-md border border-gray-100 transition duration-300 hover:shadow-xl">
                     <h2 class="text-xl font-semibold text-secondary truncate">Clip ${index + 1}: ${item.video_name}</h2>
@@ -237,7 +238,7 @@
                                 <div class="text-xs">${item.video_name}</div>
                             </div>
                         </div>
-                        <video id="${videoId}" class="video-player hidden" controls preload="none" muted playsinline loop>
+                        <video id="${videoId}" class="video-player hidden" controls preload="none" muted playsinline>
                             Your browser does not support the video tag.
                         </video>
                     </div>
@@ -261,7 +262,7 @@
 
         /**
          * Loads a single video when requested by user
-         * Using the approach from the second code example
+         * FIX: Sets the source on the <video> element itself (videoElement.src = videoSrc)
          */
         function loadVideoOnDemand(index) {
             const videoId = `video-player-${index}`;
@@ -290,29 +291,11 @@
             loadingElement.style.background = '#f3f4f6';
             loadingElement.innerHTML = '<div class="text-gray-500">Loading video...</div>';
             
+            // --- CRITICAL FIX ---
             // Set the video source directly on the <video> element
             videoElement.src = videoSrc;
-            videoElement.preload = 'metadata';
+            videoElement.preload = 'metadata'; // Use 'metadata' to load only length/dimensions first
             
-            // Set up video controls and behavior from the second code
-            videoElement.controls = true;
-            videoElement.loop = true;
-            videoElement.muted = true;
-            
-            // Add click to play/pause functionality from the second code
-            videoElement.addEventListener('click', () => {
-                if (videoElement.paused) {
-                    // Pause all other videos before playing this one
-                    document.querySelectorAll('video').forEach(vid => {
-                        if (vid !== videoElement) {
-                            vid.pause();
-                        }
-                    });
-                    videoElement.play();
-                } else {
-                    videoElement.pause();
-                }
-            });
             
             videoElement.addEventListener('loadeddata', function() {
                 console.log(`Video ${index} loaded successfully`);
@@ -337,6 +320,7 @@
                 loadingElement.classList.add('hidden');
                 if (errorElement) {
                     errorElement.classList.remove('hidden');
+                    // Better error message
                     errorElement.textContent = `Error loading video. Please check that the file exists at: ${videoSrc} and is a valid MP4 file.`;
                 }
             }, { once: true });
