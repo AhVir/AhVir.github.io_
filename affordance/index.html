@@ -3,228 +3,468 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encoded Video Gallery (141 Files)</title>
-    <!-- Load Tailwind CSS -->
+    <title>Affordance Level Annotation</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Configure Font and Base Styling -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#4f46e5',
+                        'secondary': '#6366f1',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
+        /* Custom styles for video element and responsiveness */
+        .video-card {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .video-player {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+            background-color: #000;
+        }
+        .video-loading {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .video-loading:hover {
+            background: linear-gradient(90deg, #e0e0e0 25%, #d0d0d0 50%, #e0e0e0 75%);
+            transform: scale(1.01);
+        }
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="bg-gray-50 font-sans text-gray-800 p-4 sm:p-8">
 
-    <header class="text-center mb-10 p-6 bg-white shadow-lg rounded-xl">
-        <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800">Video Gallery</h1>
-        <p class="text-lg text-gray-500 mt-2">Displaying 141 videos from the 'encoded_videos' directory.</p>
-        <div id="video-count" class="mt-2 text-sm text-indigo-600 font-semibold"></div>
+    <header class="max-w-4xl mx-auto mb-8 bg-white p-6 rounded-xl shadow-lg">
+        <h1 class="text-3xl font-bold text-primary mb-2">Affordance Level Annotation</h1>
+        <p class="text-gray-600 mb-4">Review each video clip, check the model's prediction, and classify the affordance level as 'Telec' or 'Gibsonia'. Your selections are saved automatically in your browser.</p>
+
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div id="status-message" class="text-sm font-medium text-gray-500">
+                Loading data...
+            </div>
+            <button id="download-btn" class="flex items-center space-x-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 transform hover:scale-[1.02] disabled:opacity-50" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L10 11.586l1.293-1.293a1 1 0 111.414 1.414l-2 2a1 1 0 01-1.414 0l-2-2a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v7a1 1 0 11-2 0V3a1 1 0 011-1z" clip-rule="evenodd" />
+                </svg>
+                Download Annotations (.csv)
+            </button>
+        </div>
     </header>
 
-    <!-- Video Grid Container -->
-    <main id="video-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></main>
+    <main id="video-list" class="max-w-4xl mx-auto grid grid-cols-1 gap-6">
+        </main>
 
     <script>
-        // IMPORTANT: PASTE YOUR COMPLETE LIST OF 141 FILENAMES HERE.
-        // The paths assume the 'encoded_videos' folder is in the same directory as this index.html file.
-        const allVideoFilenames = [
-            // --- START OF FILENAME LIST (YOU MUST PASTE ALL 141 NAMES HERE) ---
-            "Date01_Sub01_tablesmall_move_0_color_04.mp4",
-            "Date01_Sub01_plasticcontainer_0_color_06.mp4",
-            "Date01_Sub01_chairblack_lift_0_6.mp4",
-            "Date01_Sub01_boxlarge_hand_3.mp4",
-            "Date01_Sub01_plasticcontainer_0_color_03.mp4",
-            "Date01_Sub01_chairwood_hand_0_6.mp4",
-            "Date01_Sub01_stool_move_0_color_01.mp4",
-            "Date01_Sub01_suitcase_0_color_03.mp4",
-            "Date01_Sub01_chairwood_sit_0_4.mp4",
-            "Date01_Sub01_trashbin_0_color_04.mp4",
-            "Date01_Sub01_stool_move_0_color_07.mp4",
-            "Date01_Sub01_backpack_back0_1.mp4",
-            "Date01_Sub01_monitor_hand_0_color_02.mp4",
-            "Date01_Sub01_chairblack_hand_0_6.mp4",
-            "Date01_Sub01_tablesmall_move_0_color_02.mp4",
-            "Date01_Sub01_tablesmall_lean_0_color_01.mp4",
-            "Date01_Sub01_tablesmall_lift_0_color_06.mp4",
-            "Date01_Sub01_tablesquare_lift_0_color_04.mp4",
-            "Date01_Sub01_yogamat_hand_0_color_02.mp4",
-            "Date01_Sub01_chairblack_hand_0_8.mp4",
-            "Date01_Sub01_toolbox_0_color_03.mp4",
-            "Date01_Sub01_keyboard_move_0_5.mp4",
-            "Date01_Sub01_suitcase_lift_0_color_05.mp4",
-            "Date01_Sub01_suitcase_lift_0_color_03.mp4",
-            "Date01_Sub01_plasticcontainer_0_color_02.mp4",
-            "Date01_Sub01_keyboard_typing_0_2.mp4",
-            "Date01_Sub01_stool_sit_0_color_01.mp4",
-            "Date01_Sub01_tablesquare_hand_0_color_06.mp4",
-            "Date01_Sub01_monitor_move_0_color_03.mp4",
-            "Date01_Sub01_backpack_back0_4.mp4",
-            "Date01_Sub01_keyboard_typing_0_3.mp4",
-            "Date01_Sub01_stool_sit_0_color_03.mp4",
-            "Date01_Sub01_trashbin_0_color_01.mp4",
-            "Date01_Sub01_backpack_back0_3.mp4",
-            "Date01_Sub01_plasticcontainer_0_color_05.mp4",
-            "Date01_Sub01_plasticcontainer_0_color_01.mp4",
-            "Date01_Sub01_tablesmall_lift_0_color_05.mp4",
-            "Date01_Sub01_tablesquare_lift_0_color_03.mp4",
-            "Date01_Sub01_tablesquare_hand_0_color_08.mp4",
-            "Date01_Sub01_chairwood_sit_0_5.mp4",
-            "Date01_Sub01_stool_sit_0_color_02.mp4",
-            "Date01_Sub01_tablesquare_sit_0_color_04.mp4",
-            "Date01_Sub01_chairwood_lift_0_3.mp4",
-            "Date01_Sub01_chairblack_hand_0_2.mp4",
-            "Date01_Sub01_chairblack_hand_0_7.mp4",
-            "Date01_Sub01_suitcase_lift_0_color_01.mp4",
-            "Date01_Sub01_backpack_back0_6.mp4",
-            "Date01_Sub01_tablesmall_move_0_color_03.mp4",
-            "Date01_Sub01_stool_move_0_color_04.mp4",
-            "Date01_Sub01_monitor_move_0_color_04.mp4",
-            "Date01_Sub01_boxlarge_hand_5.mp4",
-            "Date01_Sub01_monitor_move_0_color_01.mp4",
-            "Date01_Sub01_plasticcontainer_0_color_07.mp4",
-            "Date01_Sub01_suitcase_lift_0_color_06.mp4",
-            "Date01_Sub01_tablesquare_hand_0_color_04.mp4",
-            "Date01_Sub01_monitor_move_0_color_02.mp4",
-            "Date01_Sub01_tablesquare_sit_0_color_01.mp4",
-            "Date01_Sub01_chairwood_lift_0_1.mp4",
-            "Date01_Sub01_keyboard_move_0_3.mp4",
-            "Date01_Sub01_boxlarge_hand_4.mp4",
-            "Date01_Sub01_backpack_back0_7.mp4",
-            "Date01_Sub01_chairwood_hand_0_1.mp4",
-            "Date01_Sub01_chairblack_sit_0_5.mp4",
-            "Date01_Sub01_chairwood_hand_0_4.mp4",
-            "Date01_Sub01_chairwood_hand_0_2.mp4",
-            "Date01_Sub01_suitcase_0_color_01.mp4",
-            "Date01_Sub01_chairblack_hand_0_4.mp4",
-            "Date01_Sub01_tablesquare_hand_0_color_03.mp4",
-            "Date01_Sub01_stool_move_0_color_03.mp4",
-            "Date01_Sub01_yogaball_play_0_color_01.mp4",
-            "Date01_Sub01_stool_move_0_color_06.mp4",
-            "Date01_Sub01_trashbin_0_color_03.mp4",
-            "Date01_Sub01_tablesquare_hand_0_color_01.mp4",
-            "Date01_Sub01_plasticcontainer_0_color_04.mp4",
-            "Date01_Sub01_chairwood_lift_0_2.mp4",
-            "Date01_Sub01_chairwood_lift_0_4.mp4",
-            "Date01_Sub01_chairwood_hand_0_3.mp4",
-            "Date01_Sub01_tablesquare_sit_0_color_03.mp4",
-            "Date01_Sub01_chairblack_lift_0_5.mp4",
-            "Date01_Sub01_yogamat_hand_0_color_01.mp4",
-            "Date01_Sub01_suitcase_0_color_04.mp4",
-            "Date01_Sub01_boxlarge_hand_2.mp4",
-            "Date01_Sub01_tablesmall_move_0_color_01.mp4",
-            "Date01_Sub01_tablesquare_lift_0_color_01.mp4",
-            "Date01_Sub01_backpack_back0_5.mp4",
-            "Date01_Sub01_keyboard_move_0_1.mp4",
-            "Date01_Sub01_suitcase_0_color_02.mp4",
-            "Date01_Sub01_tablesquare_sit_0_color_02.mp4",
-            "Date01_Sub01_chairblack_lift_0_4.mp4",
-            "Date01_Sub01_suitcase_lift_0_color_02.mp4",
-            "Date01_Sub01_tablesquare_hand_0_color_05.mp4",
-            "Date01_Sub01_chairblack_sit_0_2.mp4",
-            "Date01_Sub01_tablesquare_hand_0_color_02.mp4",
-            "Date01_Sub01_tablesquare_lift_0_color_02.mp4",
-            "Date01_Sub01_keyboard_move_0_2.mp4",
-            "Date01_Sub01_chairblack_lift_0_3.mp4",
-            "Date01_Sub01_chairblack_lift_0_1.mp4",
-            "Date01_Sub01_chairblack_sit_0_1.mp4",
-            "Date01_Sub01_keyboard_move_0_4.mp4",
-            "Date01_Sub01_chairblack_hand_0_3.mp4",
-            "Date01_Sub01_boxlarge_hand_1.mp4",
-            "Date01_Sub01_yogaball_play_0_color_03.mp4",
-            "Date01_Sub01_chairwood_hand_0_5.mp4",
-            "Date01_Sub01_tablesmall_lift_0_color_09.mp4",
-            "Date01_Sub01_monitor_hand_0_color_01.mp4",
-            "Date01_Sub01_chairblack_hand_0_5.mp4",
-            "Date01_Sub01_tablesmall_lift_0_color_04.mp4",
-            "Date01_Sub01_chairwood_sit_0_2.mp4",
-            "Date01_Sub01_chairwood_sit_0_3.mp4",
-            "Date01_Sub01_backpack_back0_2.mp4",
-            "Date01_Sub01_tablesmall_lift_0_color_01.mp4",
-            "Date01_Sub01_chairwood_sit_0_1.mp4",
-            "Date01_Sub01_tablesmall_lift_0_color_03.mp4",
-            "Date01_Sub01_boxlarge_hand_6.mp4",
-            "Date01_Sub01_tablesmall_lift_0_color_02.mp4",
-            "Date01_Sub01_toolbox_0_color_02.mp4",
-            "Date01_Sub01_tablesmall_lift_0_color_08.mp4",
-            "Date01_Sub01_yogaball_0_color_01.mp4",
-            "Date01_Sub01_tablesmall_move_0_color_05.mp4",
-            "Date01_Sub01_stool_move_0_color_05.mp4",
-            "Date01_Sub01_boxlarge_hand_7.mp4",
-            "Date01_Sub01_chairblack_lift_0_2.mp4",
-            "Date01_Sub01_suitcase_0_color_05.mp4",
-            "Date01_Sub01_chairblack_sit_0_4.mp4",
-            "Date01_Sub01_monitor_hand_0_color_03.mp4",
-            "Date01_Sub01_trashbin_0_color_02.mp4",
-            "Date01_Sub01_keyboard_typing_0_1.mp4",
-            "Date01_Sub01_tablesmall_lean_0_color_02.mp4",
-            "Date01_Sub01_yogaball_play_0_color_02.mp4",
-            "Date01_Sub01_tablesmall_lift_0_color_07.mp4",
-            "Date01_Sub01_toolbox_0_color_01.mp4",
-            "Date01_Sub01_stool_move_0_color_02.mp4",
-            "Date01_Sub01_tablesquare_hand_0_color_07.mp4",
-            "Date01_Sub01_tablesquare_lift_0_color_05.mp4",
-            "Date01_Sub01_yogaball_0_color_03.mp4",
-            "Date01_Sub01_chairwood_sit_0_7.mp4",
-            "Date01_Sub01_suitcase_lift_0_color_04.mp4",
-            "Date01_Sub01_chairblack_sit_0_3.mp4",
-            "Date01_Sub01_yogaball_0_color_02.mp4",
-            "Date01_Sub01_chairblack_hand_0_1.mp4",
-            "Date01_Sub01_chairwood_sit_0_6.mp4"
-            // --- END OF FILENAME LIST ---
+        // --- Configuration ---
+        const DATA_URL = './data.csv'; 
+        const VIDEO_BASE_PATH = './encoded_videos/'; 
+        const LOCAL_STORAGE_KEY = 'affordance_annotations';
+        const VIDEO_LIST_EL = document.getElementById('video-list');
+        const DOWNLOAD_BTN = document.getElementById('download-btn');
+        const STATUS_EL = document.getElementById('status-message');
+
+        // Global data store
+        let allVideoData = [];
+
+        // Classification options for the dropdown
+        const options = [
+            { value: '', label: '— Select Level —' },
+            { value: 'Telec', label: 'Telec' },
+            { value: 'Gibsonia', label: 'Gibsonia' },
         ];
 
+        // --- Core Functions ---
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const grid = document.getElementById('video-grid');
-            const videoCountDisplay = document.getElementById('video-count');
+        /**
+         * Parses a CSV string into an array of objects.
+         */
+        function parseCSV(csvString) {
+            const lines = csvString.trim().split('\n').filter(line => line.trim() !== '');
+            if (lines.length < 2) return []; 
             
-            if (allVideoFilenames.length === 0) {
-                grid.innerHTML = '<p class="text-center col-span-full text-red-600 font-bold">Error: No video filenames found in the script array. Please paste your 141 filenames into the \'allVideoFilenames\' array in the script tag.</p>';
+            const data = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+
+                // Find the index of the first comma (video_path, model_response)
+                const firstCommaIndex = line.indexOf(',');
+
+                // Find the index of the last comma (model_response, label)
+                const lastCommaIndex = line.lastIndexOf(',');
+                
+                if (firstCommaIndex === -1 || lastCommaIndex === -1 || lastCommaIndex === firstCommaIndex) {
+                    console.warn("Skipping malformed CSV line:", line);
+                    continue; 
+                }
+                
+                // 1. video_path
+                const video_path = line.substring(0, firstCommaIndex).trim();
+
+                // 3. label
+                const label = line.substring(lastCommaIndex + 1).trim().replace(/"/g, '');
+
+                // 2. model_response (Handles quoted text)
+                let model_response = line.substring(firstCommaIndex + 1, lastCommaIndex).trim();
+                if (model_response.startsWith('"') && model_response.endsWith('"')) {
+                     model_response = model_response.substring(1, model_response.length - 1).replace(/""/g, '"');
+                } else {
+                     model_response = model_response.replace(/^"|"$/g, '').replace(/""/g, '"');
+                }
+
+                data.push({
+                    video_name: video_path, 
+                    model_response: model_response,
+                    level: label
+                });
+            }
+
+            return data;
+        }
+
+        /**
+         * Reads the annotation state from localStorage and merges it with the fresh data.
+         */
+        function loadSavedSelections() {
+            try {
+                const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+                return storedData ? JSON.parse(storedData) : {};
+            } catch (e) {
+                console.error("Could not load from localStorage:", e);
+                return {};
+            }
+        }
+
+        /**
+         * Saves the current classification state to localStorage.
+         */
+        function saveSelections() {
+            const currentSelections = {};
+            allVideoData.forEach(item => {
+                currentSelections[item.video_name] = item.level || '';
+            });
+            try {
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(currentSelections));
+            } catch (e) {
+                console.error("Could not save to localStorage:", e);
+            }
+        }
+
+        /**
+         * Handles the change event from a classification dropdown.
+         */
+        function handleSelectionChange(index, value) {
+            if (index >= 0 && index < allVideoData.length) {
+                allVideoData[index].level = value;
+                saveSelections();
+                updateStatus();
+            }
+        }
+
+        /**
+         * Updates the status message based on completion progress.
+         */
+        function updateStatus() {
+            const total = allVideoData.length;
+            const completed = allVideoData.filter(item => item.level && item.level !== '').length;
+            
+            STATUS_EL.textContent = `Progress: ${completed} of ${total} clips classified (${Math.round((completed / total) * 100) || 0}%)`;
+            
+            DOWNLOAD_BTN.disabled = total === 0;
+
+            const percent = Math.round((completed / total) * 100) || 0;
+            STATUS_EL.classList.remove('text-red-500', 'text-yellow-600', 'text-green-600', 'font-bold');
+            if (percent === 100) {
+                STATUS_EL.classList.add('text-green-600', 'font-bold');
+            } else if (percent > 0) {
+                STATUS_EL.classList.add('text-yellow-600');
+            } else {
+                STATUS_EL.classList.add('text-gray-500');
+            }
+        }
+
+        /**
+         * Creates a single HTML card for a video entry.
+         */
+        function createVideoCard(item, index) {
+            const videoSrc = `${VIDEO_BASE_PATH}${item.video_name}`;
+            const currentLevel = item.level || '';
+            
+            const optionsHtml = options.map(opt => `
+                <option value="${opt.value}" ${opt.value === currentLevel ? 'selected' : ''}>
+                    ${opt.label}
+                </option>
+            `).join('');
+
+            const selectId = `level-select-${index}`;
+            const videoId = `video-player-${index}`;
+            const loadingId = `loading-${index}`;
+            const errorId = `error-${index}`;
+
+            return `
+                <div class="video-card bg-white p-6 rounded-xl shadow-md border border-gray-100 transition duration-300 hover:shadow-xl">
+                    <h2 class="text-xl font-semibold text-secondary truncate">Clip ${index + 1}: ${item.video_name}</h2>
+                    
+                    <div class="relative">
+                        <div id="${loadingId}" class="video-loading" data-video-src="${videoSrc}" data-video-index="${index}">
+                            <div class="text-gray-500 text-center">
+                                <div class="font-medium mb-2">Click to load video</div>
+                                <div class="text-xs">${item.video_name}</div>
+                            </div>
+                        </div>
+                        <video id="${videoId}" class="video-player hidden" controls preload="none" muted playsinline loop>
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    
+                    <div id="${errorId}" class="hidden p-4 bg-red-100 text-red-700 rounded-lg text-sm"></div>
+
+                    <div class="p-4 bg-gray-50 border-l-4 border-primary/50 rounded-lg">
+                        <p class="text-sm font-medium text-primary mb-1">Model Response:</p>
+                        <p class="text-sm text-gray-700">${item.model_response}</p>
+                    </div>
+
+                    <div>
+                        <label for="${selectId}" class="block text-sm font-medium text-gray-700 mb-1">Affordance Classification:</label>
+                        <select id="${selectId}" data-index="${index}" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-secondary focus:border-secondary sm:text-sm rounded-md bg-gray-50 border transition duration-150 ease-in-out">
+                            ${optionsHtml}
+                        </select>
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * Loads a single video when requested by user
+         * Using the approach from the second code example
+         */
+        function loadVideoOnDemand(index) {
+            const videoId = `video-player-${index}`;
+            const loadingId = `loading-${index}`;
+            const errorId = `error-${index}`;
+            
+            const videoElement = document.getElementById(videoId);
+            const loadingElement = document.getElementById(loadingId);
+            const errorElement = document.getElementById(errorId);
+
+            if (!videoElement || !loadingElement) return;
+
+            // Check if already loading or loaded
+            if (loadingElement.getAttribute('data-loading') === 'true' || videoElement.src) {
                 return;
             }
 
-            videoCountDisplay.textContent = `Displaying ${allVideoFilenames.length} videos.`;
-
-            allVideoFilenames.forEach(filename => {
-                const videoCard = document.createElement('div');
-                videoCard.className = 'bg-white p-4 shadow-xl rounded-lg overflow-hidden transition duration-300 hover:shadow-2xl';
-
-                // Video Element
-                const videoElement = document.createElement('video');
-                // The source path: we assume 'encoded_videos' is a subdirectory
-                videoElement.src = `./encoded_videos/${filename}`; 
-                videoElement.controls = true; // Show playback controls
-                videoElement.loop = true;     // Loop video
-                videoElement.muted = true;    // Mute by default (important for autoplay in some browsers)
-                videoElement.className = 'w-full rounded-md object-cover aspect-video bg-gray-200';
-                
-                // Add event listener to play/pause on click
-                videoElement.addEventListener('click', () => {
-                    if (videoElement.paused) {
-                        // Pause all other videos before playing this one
-                        document.querySelectorAll('video').forEach(vid => {
-                            if (vid !== videoElement) {
-                                vid.pause();
-                            }
-                        });
-                        videoElement.play();
-                    } else {
-                        videoElement.pause();
-                    }
-                });
-
-                // Title/Filename Display
-                const title = document.createElement('p');
-                title.className = 'mt-3 text-sm font-medium text-gray-700 truncate';
-                title.textContent = filename;
-
-                videoCard.appendChild(videoElement);
-                videoCard.appendChild(title);
-                grid.appendChild(videoCard);
+            const videoSrc = loadingElement.getAttribute('data-video-src');
+            
+            console.log(`Loading video ${index}: ${videoSrc}`);
+            
+            // Mark as loading
+            loadingElement.setAttribute('data-loading', 'true');
+            loadingElement.style.cursor = 'default';
+            loadingElement.style.animation = 'none';
+            loadingElement.style.background = '#f3f4f6';
+            loadingElement.innerHTML = '<div class="text-gray-500">Loading video...</div>';
+            
+            // Set the video source directly on the <video> element
+            videoElement.src = videoSrc;
+            videoElement.preload = 'metadata';
+            
+            // Set up video controls and behavior from the second code
+            videoElement.controls = true;
+            videoElement.loop = true;
+            videoElement.muted = true;
+            
+            // Add click to play/pause functionality from the second code
+            videoElement.addEventListener('click', () => {
+                if (videoElement.paused) {
+                    // Pause all other videos before playing this one
+                    document.querySelectorAll('video').forEach(vid => {
+                        if (vid !== videoElement) {
+                            vid.pause();
+                        }
+                    });
+                    videoElement.play();
+                } else {
+                    videoElement.pause();
+                }
             });
-        });
+            
+            videoElement.addEventListener('loadeddata', function() {
+                console.log(`Video ${index} loaded successfully`);
+                loadingElement.classList.add('hidden');
+                videoElement.classList.remove('hidden');
+                
+                // Try to play if muted (respects autoplay policies)
+                if (videoElement.muted) {
+                    videoElement.play().catch(e => {
+                        // This catch block handles browser autoplay restrictions
+                        console.log(`Video ${index} autoplay blocked, user must click play:`, e.message);
+                    });
+                }
+            }, { once: true });
+
+            videoElement.addEventListener('canplay', function() {
+                console.log(`Video ${index} can play`);
+            }, { once: true });
+
+            videoElement.addEventListener('error', function(e) {
+                console.error(`Video ${index} failed to load:`, e);
+                loadingElement.classList.add('hidden');
+                if (errorElement) {
+                    errorElement.classList.remove('hidden');
+                    errorElement.textContent = `Error loading video. Please check that the file exists at: ${videoSrc} and is a valid MP4 file.`;
+                }
+            }, { once: true });
+
+            // Start loading the video
+            videoElement.load();
+        }
+
+        /**
+         * Sets up click listeners for manual video loading
+         */
+        function setupManualLoading() {
+            // Add click listeners to all loading elements
+            document.querySelectorAll('.video-loading').forEach(loadingElement => {
+                loadingElement.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-video-index'), 10);
+                    loadVideoOnDemand(index);
+                });
+            });
+        }
+
+        /**
+         * Renders all video cards and attaches event listeners.
+         */
+        function renderData() {
+            VIDEO_LIST_EL.innerHTML = allVideoData.map(createVideoCard).join('');
+
+            // Attach event listeners to all dynamically created dropdowns
+            document.querySelectorAll('select[data-index]').forEach(selectEl => {
+                selectEl.addEventListener('change', (e) => {
+                    const index = parseInt(e.target.dataset.index, 10);
+                    const value = e.target.value;
+                    handleSelectionChange(index, value);
+                });
+            });
+
+            // Set up manual loading for videos (user must click to load)
+            setupManualLoading();
+
+            updateStatus();
+        }
+
+        /**
+         * Converts the current data state to a CSV string.
+         */
+        function convertToCSV() {
+            const headers = ['video_path', 'model_response', 'label'];
+            let csvContent = headers.join(',') + '\n';
+
+            allVideoData.forEach(item => {
+                // Ensure model_response is properly quoted and escaped for CSV
+                const modelResponse = `"${(item.model_response || '').replace(/"/g, '""')}"`;
+                const label = item.level || ''; 
+                
+                const row = [item.video_name, modelResponse, label];
+                csvContent += row.join(',') + '\n';
+            });
+            return csvContent;
+        }
+
+        /**
+         * Triggers the download of the CSV file.
+         */
+        function downloadCSV() {
+            const csv = convertToCSV();
+            const filename = `affordance_annotations_${new Date().toISOString().slice(0, 10)}.csv`;
+            
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            
+            const link = document.createElement("a");
+            if (link.download !== undefined) { 
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }
+        }
+
+        /**
+         * Main function to initialize the application.
+         */
+        async function initializeApp() {
+            try {
+                // 1. Fetch CSV data
+                const response = await fetch(DATA_URL);
+                if (!response.ok) {
+                    throw new Error(`Failed to load data. Status: ${response.status}`);
+                }
+                const csvText = await response.text();
+                
+                // 2. Parse CSV into data objects
+                const freshData = parseCSV(csvText);
+
+                // 3. Load saved selections from browser storage
+                const savedSelections = loadSavedSelections();
+
+                // 4. Merge saved selections into the fresh data
+                allVideoData = freshData.map(item => ({
+                    ...item,
+                    level: savedSelections[item.video_name] || item.level || '', 
+                }));
+                
+                if (allVideoData.length === 0) {
+                     throw new Error("No data records found after parsing CSV. Check CSV format.");
+                }
+
+                // 5. Render UI
+                renderData();
+                DOWNLOAD_BTN.addEventListener('click', downloadCSV);
+
+            } catch (error) {
+                console.error("Initialization failed:", error);
+                VIDEO_LIST_EL.innerHTML = `<div class="p-6 bg-red-100 text-red-700 rounded-xl max-w-4xl mx-auto">
+                    <h2 class="text-lg font-bold mb-2">Error Loading Data</h2>
+                    <p>Could not load or parse the data file. Please ensure **data.csv** exists in the same directory as this HTML file, and is formatted correctly.</p>
+                    <p class="text-sm mt-2">Details: ${error.message}</p>
+                </div>`;
+                STATUS_EL.textContent = "Error: Data failed to load.";
+                STATUS_EL.classList.add('text-red-500');
+            }
+        }
+
+        // Start the application on load
+        window.onload = initializeApp;
     </script>
 </body>
 </html>
