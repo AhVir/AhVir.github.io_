@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Affordance Level Annotation</title>
+    <link rel="icon" type="image/x-icon" href="./circle.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -37,7 +38,7 @@
         .video-loading {
             background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
             background-size: 200% 100%;
-            animation: loading 1.5s infinite;
+            animation: loading 5s infinite;
             min-height: 200px;
             display: flex;
             align-items: center;
@@ -60,33 +61,42 @@
 
     <header class="max-w-7xl mx-auto mb-8 bg-white p-6 rounded-xl shadow-lg">
         <h1 class="text-3xl font-bold text-primary mb-2">Affordance Level Annotation</h1>
-        <!-- <p class="text-gray-600 mb-4">Review each video clip, check the model's prediction, and classify the affordance level as 'Telec' or 'Gibsonia'. Your selections are saved automatically in your browser.</p> -->
 
         <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
             <div id="status-message" class="text-sm font-medium text-gray-500">
                 Loading data...
             </div>
-            <button id="download-btn" class="flex items-center space-x-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 transform hover:scale-[1.02] disabled:opacity-50" disabled>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L10 11.586l1.293-1.293a1 1 0 111.414 1.414l-2 2a1 1 0 01-1.414 0l-2-2a1 1 0 010-1.414z" clip-rule="evenodd" />
-                    <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v7a1 1 0 11-2 0V3a1 1 0 011-1z" clip-rule="evenodd" />
-                </svg>
-                Download Annotations (.csv)
-            </button>
+            
+            <div class="flex flex-col sm:flex-row gap-4">
+                <button id="reset-btn" class="flex items-center space-x-2 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 transform hover:scale-[1.02] disabled:opacity-50" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.564 1 1 0 11-1.885.664A5.002 5.002 0 005.9 5.118V7a1 1 0 01-2 0V3a1 1 0 011-1zm12.657 9.458a1 1 0 00-1.414-1.414 5.002 5.002 0 00-7.88 1.956v1.414a1 1 0 102 0v-1.101A7.002 7.002 0 0115.05 4.949a1 1 0 001.414 1.414z" clip-rule="evenodd" />
+                    </svg>
+                    Reset Annotations
+                </button>
+                
+                <button id="download-btn" class="flex items-center space-x-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 transform hover:scale-[1.02] disabled:opacity-50" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L10 11.586l1.293-1.293a1 1 0 111.414 1.414l-2 2a1 1 0 01-1.414 0l-2-2a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v7a1 1 0 11-2 0V3a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                    Download Annotations (.csv)
+                </button>
+            </div>
         </div>
     </header>
 
     <main id="video-list" class="max-w-7xl mx-auto">
-        <!-- Container will be populated by JavaScript -->
-    </main>
+        </main>
 
     <script>
         // --- Configuration ---
-        const DATA_URL = './data.csv'; 
+        const DATA_URL = './model_responses.csv'; 
         const VIDEO_BASE_PATH = './encoded_videos/'; 
         const LOCAL_STORAGE_KEY = 'affordance_annotations';
         const VIDEO_LIST_EL = document.getElementById('video-list');
         const DOWNLOAD_BTN = document.getElementById('download-btn');
+        const RESET_BTN = document.getElementById('reset-btn'); // New element reference
         const STATUS_EL = document.getElementById('status-message');
 
         // Global data store
@@ -95,17 +105,72 @@
         // Classification options for the dropdown
         const options = [
             { value: '', label: '— Select Level —' },
-            { value: 'Telec', label: 'Telec' },
-            { value: 'Gibsonia', label: 'Gibsonia' },
+            { value: 'Telic', label: 'Telic' },
+            { value: 'Gibsonian', label: 'Gibsonian' },
         ];
 
         // --- Core Functions ---
 
+        // /**
+        //  * Parses a CSV string into an array of objects.
+        //  */
+        // function parseCSV(csvString) {
+        //     const lines = csvString.trim().split('\n').filter(line => line.trim() !== '');
+        //     if (lines.length < 2) return []; 
+            
+        //     const data = [];
+
+        //     // ... (CSV parsing logic remains the same)
+        //     const headers = lines[0].split(',');
+        //     const videoPathIndex = headers.indexOf('video_path');
+        //     const modelResponseIndex = headers.indexOf('model_response');
+        //     const labelIndex = headers.indexOf('label');
+            
+        //     if (videoPathIndex === -1 || modelResponseIndex === -1 || labelIndex === -1) {
+        //          console.error("CSV headers missing: expected video_path, model_response, label.");
+        //          return [];
+        //     }
+            
+        //     // This is a more robust way to handle quoted CSV lines than the previous slicing logic
+        //     for (let i = 1; i < lines.length; i++) {
+        //         // Simple split may fail if responses contain commas, so we rely on regex for simple parsing
+        //         const line = lines[i].trim();
+        //         const parts = [];
+        //         let current = '';
+        //         let inQuotes = false;
+
+        //         for (let j = 0; j < line.length; j++) {
+        //             const char = line[j];
+        //             if (char === '"') {
+        //                 inQuotes = !inQuotes;
+        //             } else if (char === ',' && !inQuotes) {
+        //                 parts.push(current.trim().replace(/^"|"$/g, '').replace(/""/g, '"'));
+        //                 current = '';
+        //             } else {
+        //                 current += char;
+        //             }
+        //         }
+        //         parts.push(current.trim().replace(/^"|"$/g, '').replace(/""/g, '"'));
+                
+        //         if (parts.length < 3) continue;
+
+        //         data.push({
+        //             video_name: parts[videoPathIndex], 
+        //             model_response: parts[modelResponseIndex],
+        //             level: parts[labelIndex]
+        //         });
+        //     }
+
+        //     return data;
+        // }
+
         /**
          * Parses a CSV string into an array of objects.
+         * This uses the proven simple slicing logic that correctly handles your data structure.
          */
         function parseCSV(csvString) {
             const lines = csvString.trim().split('\n').filter(line => line.trim() !== '');
+            // Need header + at least one data line
             if (lines.length < 2) return []; 
             
             const data = [];
@@ -113,25 +178,28 @@
             for (let i = 1; i < lines.length; i++) {
                 const line = lines[i].trim();
 
-                // Find the index of the first comma (video_path, model_response)
+                // 1. Find the index of the first comma (video_path, model_response)
                 const firstCommaIndex = line.indexOf(',');
 
-                // Find the index of the last comma (model_response, label)
+                // 2. Find the index of the last comma (model_response, label)
                 const lastCommaIndex = line.lastIndexOf(',');
                 
+                // Skip lines that don't conform to the expected 3-column structure (or are malformed)
                 if (firstCommaIndex === -1 || lastCommaIndex === -1 || lastCommaIndex === firstCommaIndex) {
                     console.warn("Skipping malformed CSV line:", line);
                     continue; 
                 }
                 
-                // 1. video_path
+                // 1. video_path is before the first comma
                 const video_path = line.substring(0, firstCommaIndex).trim();
 
-                // 3. label
+                // 3. label is after the last comma
                 const label = line.substring(lastCommaIndex + 1).trim().replace(/"/g, '');
 
-                // 2. model_response (Handles quoted text)
+                // 2. model_response is everything between the two commas
                 let model_response = line.substring(firstCommaIndex + 1, lastCommaIndex).trim();
+
+                // Clean up quotes and escaped quotes ( "" -> " )
                 if (model_response.startsWith('"') && model_response.endsWith('"')) {
                      model_response = model_response.substring(1, model_response.length - 1).replace(/""/g, '"');
                 } else {
@@ -141,7 +209,7 @@
                 data.push({
                     video_name: video_path, 
                     model_response: model_response,
-                    level: label
+                    level: ''
                 });
             }
 
@@ -188,6 +256,30 @@
         }
 
         /**
+         * NEW FUNCTION: Clears all annotations and resets the UI.
+         */
+        function resetAnnotations() {
+            if (!confirm("Are you sure you want to RESET ALL ANNOTATIONS? This action cannot be undone and will clear all saved progress in your browser.")) {
+                return;
+            }
+
+            // 1. Clear Local Storage
+            localStorage.removeItem(LOCAL_STORAGE_KEY);
+
+            // 2. Clear annotations in the current data state
+            allVideoData.forEach(item => {
+                item.level = '';
+            });
+
+            // 3. Re-render the UI to show cleared selections
+            renderData(); 
+            
+            // 4. Update status
+            updateStatus();
+            alert("All annotations have been reset.");
+        }
+
+        /**
          * Updates the status message based on completion progress.
          */
         function updateStatus() {
@@ -197,7 +289,8 @@
             STATUS_EL.textContent = `Progress: ${completed} of ${total} clips classified (${Math.round((completed / total) * 100) || 0}%)`;
             
             DOWNLOAD_BTN.disabled = total === 0;
-
+            RESET_BTN.disabled = total === 0; // Enable/Disable reset button
+            
             const percent = Math.round((completed / total) * 100) || 0;
             STATUS_EL.classList.remove('text-red-500', 'text-yellow-600', 'text-green-600', 'font-bold');
             if (percent === 100) {
@@ -229,10 +322,9 @@
 
             return `
                 <div class="video-card bg-white p-6 rounded-xl shadow-md border border-gray-100 transition duration-300 hover:shadow-xl h-full">
-                    <h2 class="text-xl font-semibold text-secondary truncate mb-4">Clip ${index + 1}: ${item.video_name}</h2>
+                    <h2 class="text-xl font-semibold text-secondary mb-4 break-all">Clip ${index + 1}: ${item.video_name}</h2>
                     
                     <div class="flex flex-col md:flex-row gap-6 h-full">
-                        <!-- Video Section (Left) -->
                         <div class="md:w-1/2">
                             <div class="relative">
                                 <div id="${loadingId}" class="video-loading" data-video-src="${videoSrc}" data-video-index="${index}">
@@ -249,7 +341,6 @@
                             <div id="${errorId}" class="hidden p-4 bg-red-100 text-red-700 rounded-lg text-sm mt-2"></div>
                         </div>
                         
-                        <!-- Content Section (Right) -->
                         <div class="md:w-1/2 flex flex-col gap-4">
                             <div class="p-4 bg-gray-50 border-l-4 border-primary/50 rounded-lg h-full">
                                 <p class="text-sm font-medium text-primary mb-1">Model Response:</p>
@@ -313,7 +404,6 @@
 
         /**
          * Loads a single video when requested by user
-         * Using the approach from the second code example
          */
         function loadVideoOnDemand(index) {
             const videoId = `video-player-${index}`;
@@ -346,12 +436,12 @@
             videoElement.src = videoSrc;
             videoElement.preload = 'metadata';
             
-            // Set up video controls and behavior from the second code
+            // Set up video controls and behavior
             videoElement.controls = true;
             videoElement.loop = true;
             videoElement.muted = true;
             
-            // Add click to play/pause functionality from the second code
+            // Add click to play/pause functionality
             videoElement.addEventListener('click', () => {
                 if (videoElement.paused) {
                     // Pause all other videos before playing this one
@@ -462,7 +552,7 @@
                 }
                 const csvText = await response.text();
                 
-                // 2. Parse CSV into data objects
+                // 2. Parse CSV into data objects (using improved parsing)
                 const freshData = parseCSV(csvText);
 
                 // 3. Load saved selections from browser storage
@@ -480,13 +570,16 @@
 
                 // 5. Render UI
                 renderData();
+                
+                // 6. Attach Event Listeners
                 DOWNLOAD_BTN.addEventListener('click', downloadCSV);
+                RESET_BTN.addEventListener('click', resetAnnotations); // Attach new reset function
 
             } catch (error) {
                 console.error("Initialization failed:", error);
                 VIDEO_LIST_EL.innerHTML = `<div class="p-6 bg-red-100 text-red-700 rounded-xl max-w-4xl mx-auto">
                     <h2 class="text-lg font-bold mb-2">Error Loading Data</h2>
-                    <p>Could not load or parse the data file. Please ensure **data.csv** exists in the same directory as this HTML file, and is formatted correctly.</p>
+                    <p>Could not load or parse the data file. Please ensure **model_responses.csv** exists in the same directory as this HTML file, and is formatted correctly.</p>
                     <p class="text-sm mt-2">Details: ${error.message}</p>
                 </div>`;
                 STATUS_EL.textContent = "Error: Data failed to load.";
